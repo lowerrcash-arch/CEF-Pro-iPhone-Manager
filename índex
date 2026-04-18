@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<title>CEF Pro iPhone Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#000;--sf:rgba(18,18,20,.92);--glass:rgba(28,28,32,.72);--glass2:rgba(38,38,44,.55);
+  --card:rgba(28,28,32,.85);--card2:rgba(44,44,50,.6);
+  --blue:#0A84FF;--blue2:#409CFF;--blue-g:rgba(10,132,255,.12);--blue-b:rgba(10,132,255,.25);
+  --green:#30D158;--green-g:rgba(48,209,88,.1);--green-b:rgba(48,209,88,.22);
+  --red:#FF453A;--red-g:rgba(255,69,58,.1);--red-b:rgba(255,69,58,.22);
+  --orange:#FF9F0A;--orange-g:rgba(255,159,10,.1);--orange-b:rgba(255,159,10,.22);
+  --purple:#BF5AF2;--purple-g:rgba(191,90,242,.1);--purple-b:rgba(191,90,242,.22);
+  --teal:#64D2FF;--pink:#FF375F;--indigo:#5E5CE6;
+  --w:#F5F5F7;--w2:#D1D1D6;--w3:#8E8E93;--w4:#636366;--w5:#3A3A3C;--w6:#2C2C2E;--w7:#1C1C1E;
+  --brd:rgba(84,84,88,.35);
+  --font:'Manrope',-apple-system,sans-serif;--mono:'JetBrains Mono',monospace;
+  --safe-t:env(safe-area-inset-top);--safe-b:env(safe-area-inset-bottom);
+  --r:14px;--r2:18px;--r3:22px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+body{font-family:var(--font);background:var(--bg);color:var(--w);-webkit-font-smoothing:antialiased;overflow:hidden;height:100dvh;position:fixed;width:100%}
+input,select,textarea,button{font-family:inherit;-webkit-appearance:none}
+
+.app{display:flex;flex-direction:column;height:100dvh;background:linear-gradient(175deg,#0a0a12 0%,#000 40%,#0a0512 100%)}
+
+/* HEADER */
+.hdr{flex-shrink:0;padding:calc(var(–safe-t) + .45rem) .75rem .45rem;display:flex;align-items:center;justify-content:space-between;background:var(–sf);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(–brd)}
+.h-left{display:flex;align-items:center;gap:.45rem}
+.h-mark{font-weight:800;font-size:.88rem;background:linear-gradient(135deg,var(–blue),var(–purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.h-pro{font-family:var(–mono);font-size:.42rem;letter-spacing:.14em;color:var(–w4);background:var(–glass2);padding:.12rem .35rem;border-radius:4px;border:1px solid var(–brd)}
+.h-rates{display:flex;gap:.3rem}
+.h-pill{font-family:var(–mono);font-size:.54rem;padding:.16rem .4rem;border-radius:7px;background:var(–glass2);border:1px solid var(–brd);display:flex;align-items:center;gap:.18rem}
+.h-pill .dot{width:4px;height:4px;border-radius:50%;background:var(–green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* SCROLLABLE NAV TABS */
+.nav-wrap{flex-shrink:0;background:var(–sf);backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(–brd);overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;scrollbar-width:none}
+.nav-wrap::-webkit-scrollbar{display:none}
+.nav{display:inline-flex;gap:0;padding:0 .4rem}
+.nb{display:inline-flex;flex-direction:column;align-items:center;gap:.05rem;padding:.3rem .55rem;font-size:.46rem;font-weight:500;color:var(–w4);cursor:pointer;border:none;background:none;-webkit-tap-highlight-color:transparent;transition:color .15s;border-bottom:2px solid transparent;white-space:nowrap}
+.nb .ni{font-size:.9rem}.nb.on{color:var(–blue);border-bottom-color:var(–blue)}
+
+/* VIEWS */
+.views{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:.6rem .6rem calc(var(–safe-b) + .5rem);scroll-behavior:smooth}
+.v{display:none;flex-direction:column;gap:.6rem}.v.on{display:flex}
+
+/* CARDS */
+.gc{background:var(–card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(–brd);border-radius:var(–r2);padding:.7rem .8rem;transition:transform .1s}
+.gc:active{transform:scale(.985)}
+
+/* KPI STRIP */
+.ks{display:flex;gap:.45rem;overflow-x:auto;padding-bottom:.15rem;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}.ks::-webkit-scrollbar{display:none}
+.ki{min-width:128px;flex-shrink:0;background:var(–card);backdrop-filter:blur(8px);border:1px solid var(–brd);border-radius:var(–r);padding:.6rem .7rem;scroll-snap-align:start;position:relative;overflow:hidden}
+.ki::before{content:’’;position:absolute;top:0;left:15%;right:15%;height:1px}
+.ki[data-c=“blue”]::before{background:linear-gradient(90deg,transparent,var(–blue),transparent)}
+.ki[data-c=“green”]::before{background:linear-gradient(90deg,transparent,var(–green),transparent)}
+.ki[data-c=“red”]::before{background:linear-gradient(90deg,transparent,var(–red),transparent)}
+.ki[data-c=“orange”]::before{background:linear-gradient(90deg,transparent,var(–orange),transparent)}
+.ki[data-c=“purple”]::before{background:linear-gradient(90deg,transparent,var(–purple),transparent)}
+.ki[data-c=“teal”]::before{background:linear-gradient(90deg,transparent,var(–teal),transparent)}
+.ki-l{font-family:var(–mono);font-size:.44rem;letter-spacing:.08em;color:var(–w4);text-transform:uppercase;margin-bottom:.18rem}
+.ki-v{font-weight:800;font-size:1.05rem;line-height:1.1}
+.ki-s{font-size:.56rem;color:var(–w3);margin-top:.1rem}
+
+.sh{display:flex;align-items:center;justify-content:space-between;gap:.3rem}
+.sh-t{font-weight:700;font-size:.85rem}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.2rem;padding:.4rem .7rem;border-radius:12px;border:none;cursor:pointer;font-weight:600;font-size:.68rem;-webkit-tap-highlight-color:transparent;transition:all .1s}
+.btn:active{transform:scale(.94);opacity:.85}
+.bb{background:var(–blue);color:#fff}
+.bgh{background:var(–glass2);color:var(–w2);border:1px solid var(–brd)}
+.bgr{background:var(–green-g);color:var(–green);border:1px solid var(–green-b)}
+.bre{background:var(–red-g);color:var(–red);border:1px solid var(–red-b)}
+.bor{background:var(–orange-g);color:var(–orange);border:1px solid var(–orange-b)}
+.bpu{background:var(–purple-g);color:var(–purple);border:1px solid var(–purple-b)}
+.bxs{padding:.18rem .4rem;font-size:.56rem;border-radius:8px}
+
+/* TABLE */
+.tw{background:var(–card);border:1px solid var(–brd);border-radius:var(–r2);overflow-x:auto;-webkit-overflow-scrolling:touch;backdrop-filter:blur(8px)}
+.tw table{width:100%;border-collapse:collapse;min-width:460px}
+.tw th{padding:.4rem .55rem;text-align:left;font-family:var(–mono);font-size:.44rem;letter-spacing:.08em;color:var(–w4);text-transform:uppercase;border-bottom:1px solid var(–brd);background:var(–glass2);white-space:nowrap}
+.tw td{padding:.42rem .55rem;font-size:.66rem;color:var(–w2);border-bottom:1px solid rgba(84,84,88,.18);white-space:nowrap}
+.tw tr:last-child td{border-bottom:none}
+.tm{font-family:var(–mono);font-size:.64rem}
+.tg{color:var(–green)}.tr{color:var(–red)}.to{color:var(–orange)}.tbl{color:var(–blue)}.tp{color:var(–purple)}.ttl{color:var(–teal)}
+
+/* BADGES */
+.bd{display:inline-flex;align-items:center;padding:.1rem .35rem;border-radius:6px;font-family:var(–mono);font-size:.46rem;font-weight:500}
+.bd-g{background:var(–green-g);color:var(–green);border:1px solid var(–green-b)}
+.bd-r{background:var(–red-g);color:var(–red);border:1px solid var(–red-b)}
+.bd-o{background:var(–orange-g);color:var(–orange);border:1px solid var(–orange-b)}
+.bd-b{background:var(–blue-g);color:var(–blue2);border:1px solid var(–blue-b)}
+.bd-p{background:var(–purple-g);color:var(–purple);border:1px solid var(–purple-b)}
+.bd-t{background:rgba(100,210,255,.08);color:var(–teal);border:1px solid rgba(100,210,255,.2)}
+.bd-0{background:var(–glass2);color:var(–w3);border:1px solid var(–brd)}
+
+/* MODAL */
+.mo-bg{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.55);align-items:flex-end;justify-content:center}
+.mo-bg.open{display:flex}
+.mo{background:var(–w7);border-radius:var(–r3) var(–r3) 0 0;width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;animation:su .28s cubic-bezier(.32,.72,.24,1)}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.mo-bar{width:36px;height:5px;background:var(–w5);border-radius:3px;margin:.5rem auto .1rem}
+.mo-hd{padding:.3rem .95rem .5rem;display:flex;align-items:center;justify-content:space-between}
+.mo-t{font-weight:700;font-size:.9rem}
+.mo-x{background:var(–w6);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(–w3);border:none;cursor:pointer}
+.mo-bd{padding:0 .95rem .8rem;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.mo-ft{padding:.55rem .95rem calc(var(–safe-b) + .4rem);border-top:1px solid var(–brd);display:flex;gap:.35rem;justify-content:flex-end}
+
+/* FORM */
+.f{margin-bottom:.52rem}
+.f label{display:block;font-size:.6rem;font-weight:600;color:var(–w3);margin-bottom:.18rem}
+.f input,.f select,.f textarea{width:100%;padding:.46rem .65rem;background:var(–w6);border:1px solid var(–brd);border-radius:11px;color:var(–w);font-size:.8rem;outline:none;transition:border-color .15s}
+.f input:focus,.f select:focus{border-color:var(–blue);background:rgba(44,44,50,.8)}
+.f input::placeholder{color:var(–w5)}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.45rem}
+
+/* RESULT BOX */
+.rb{background:var(–card);border:1px solid var(–brd);border-radius:var(–r);padding:.65rem;display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+.rb3{grid-template-columns:1fr 1fr 1fr}
+.ri{text-align:center}
+.ri-l{font-family:var(–mono);font-size:.42rem;letter-spacing:.06em;color:var(–w4);text-transform:uppercase;margin-bottom:.12rem}
+.ri-v{font-weight:800;font-size:.92rem}
+
+/* STOCK CARD */
+.sc{background:var(–card);backdrop-filter:blur(8px);border:1px solid var(–brd);border-radius:var(–r2);padding:.6rem .7rem;display:flex;gap:.55rem;align-items:center;margin-bottom:.28rem;transition:transform .1s}
+.sc:active{transform:scale(.98)}
+.sc-i{width:38px;height:38px;border-radius:10px;background:linear-gradient(145deg,rgba(44,44,50,.8),rgba(28,28,32,.9));border:1px solid var(–brd);display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0}
+.sc-info{flex:1;min-width:0}
+.sc-m{font-weight:700;font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-s{font-size:.56rem;color:var(–w3);margin-top:.06rem}
+.sc-r{text-align:right;flex-shrink:0}
+.sc-p{font-family:var(–mono);font-weight:700;font-size:.72rem}
+.sc-mg{font-family:var(–mono);font-size:.5rem;margin-top:.06rem}
+
+/* MODEL GROUP (compact view) */
+.mg{background:var(–card);border:1px solid var(–brd);border-radius:var(–r2);margin-bottom:.32rem;overflow:hidden;transition:border-color .15s}
+.mg.open{border-color:var(–blue-b)}
+.mg-hd{padding:.55rem .7rem;display:flex;align-items:center;gap:.5rem;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mg-hd:active{background:var(–glass2)}
+.mg-ico{width:34px;height:34px;border-radius:9px;background:linear-gradient(145deg,rgba(44,44,50,.8),rgba(28,28,32,.9));border:1px solid var(–brd);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.mg-info{flex:1;min-width:0}
+.mg-name{font-weight:700;font-size:.76rem}
+.mg-sub{font-size:.56rem;color:var(–w3);margin-top:.04rem}
+.mg-right{text-align:right;flex-shrink:0}
+.mg-cnt{font-family:var(–mono);font-size:.72rem;font-weight:700}
+.mg-val{font-family:var(–mono);font-size:.5rem;color:var(–w4);margin-top:.04rem}
+.mg-arr{font-size:.6rem;color:var(–w4);margin-left:.25rem;transition:transform .2s}
+.mg.open .mg-arr{transform:rotate(90deg)}
+.mg-body{display:none;border-top:1px solid var(–brd);padding:.4rem .55rem}
+.mg.open .mg-body{display:block}
+.mg-unit{padding:.36rem .5rem;border-radius:10px;background:var(–glass2);border:1px solid var(–brd);margin-bottom:.2rem;display:flex;align-items:center;gap:.45rem}
+.mg-unit:last-child{margin-bottom:0}
+.mu-info{flex:1;min-width:0;font-size:.64rem}
+.mu-top{display:flex;align-items:center;gap:.3rem;flex-wrap:wrap}
+.mu-bot{font-size:.54rem;color:var(–w4);margin-top:.06rem;font-family:var(–mono)}
+.mu-r{text-align:right;flex-shrink:0}
+
+/* Servicio técnico */
+.serv-tag{display:inline-flex;align-items:center;gap:.15rem;padding:.08rem .3rem;border-radius:5px;font-size:.44rem;font-family:var(–mono);background:var(–orange-g);color:var(–orange);border:1px solid var(–orange-b)}
+
+/* Pipeline */
+.pipe{display:flex;gap:.35rem;overflow-x:auto;padding-bottom:.2rem;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory}.pipe::-webkit-scrollbar{display:none}
+.pcol{min-width:180px;flex-shrink:0;background:var(–glass);backdrop-filter:blur(6px);border:1px solid var(–brd);border-radius:var(–r2);padding:.45rem;scroll-snap-align:start}
+.pcol-h{font-family:var(–mono);font-size:.44rem;letter-spacing:.08em;color:var(–w4);text-transform:uppercase;margin-bottom:.35rem;display:flex;justify-content:space-between;align-items:center}
+.pcol-n{background:var(–glass2);padding:.06rem .28rem;border-radius:5px;font-size:.44rem;color:var(–w3)}
+.lc{background:var(–card2);border:1px solid var(–brd);border-radius:11px;padding:.45rem .55rem;margin-bottom:.25rem;cursor:pointer;transition:all .1s}
+.lc:active{transform:scale(.97);border-color:var(–blue-b)}
+.lc-n{font-weight:600;font-size:.72rem}.lc-d{font-size:.56rem;color:var(–w3);margin-top:.04rem}
+.lc-b{display:flex;justify-content:space-between;align-items:center;margin-top:.2rem}
+
+/* Sim */
+.sr{display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem}
+.sr-l{font-size:.62rem;color:var(–w3);width:62px;flex-shrink:0}
+.sr input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:var(–w6);border-radius:2px;outline:none}
+.sr input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(–w);box-shadow:0 1px 6px rgba(0,0,0,.4);cursor:pointer}
+.sr-v{font-family:var(–mono);font-size:.72rem;font-weight:600;width:72px;text-align:right}
+
+/* Caja */
+.caja-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem}
+.caja-c{background:var(–card);border:1px solid var(–brd);border-radius:var(–r);padding:.55rem .65rem;text-align:center}
+.caja-cur{font-family:var(–mono);font-size:.46rem;letter-spacing:.08em;color:var(–w4);text-transform:uppercase;margin-bottom:.15rem}
+.caja-val{font-weight:800;font-size:1rem}
+
+/* Vendor */
+.vc{background:var(–card);border:1px solid var(–brd);border-radius:var(–r2);padding:.55rem .65rem;display:flex;align-items:center;gap:.55rem}
+.vc-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(–blue),var(–purple));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.58rem;color:#fff;flex-shrink:0}
+.vc-info{flex:1;min-width:0}.vc-nm{font-weight:600;font-size:.76rem}
+.vc-st{font-family:var(–mono);font-size:.52rem;color:var(–w3);display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.04rem}
+
+.emp{text-align:center;padding:1.5rem .4rem;display:flex;flex-direction:column;align-items:center;gap:.3rem}
+.emp-i{font-size:1.4rem;opacity:.2}.emp-t{font-size:.68rem;color:var(–w5)}
+.toast{position:fixed;top:calc(var(–safe-t) + 52px);left:50%;transform:translateX(-50%);background:var(–glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(–brd);color:var(–w);padding:.48rem .9rem;border-radius:var(–r);font-size:.74rem;font-weight:500;z-index:999;box-shadow:0 8px 40px rgba(0,0,0,.5);animation:ti .25s ease}
+@keyframes ti{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.pills{display:flex;gap:.25rem;flex-wrap:wrap}
+.pill{padding:.22rem .5rem;border-radius:9px;font-size:.62rem;font-weight:500;border:1px solid var(–brd);background:var(–glass2);color:var(–w4);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:all .1s}
+.pill:active{transform:scale(.94)}.pill.on{background:var(–blue-g);border-color:var(–blue-b);color:var(–blue2)}
+.fade{animation:fi .3s ease}@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.cost-hint{font-family:var(–mono);font-size:.52rem;color:var(–orange);margin-top:.1rem}
+
+/* Divider label */
+.sec-lbl{font-family:var(–mono);font-size:.42rem;letter-spacing:.1em;color:var(–w4);text-transform:uppercase;padding:.45rem 0 .15rem;border-top:1px solid var(–brd);margin-top:.15rem}
+.sec-lbl:first-child{border-top:none;padding-top:0}
+
+/* Canje section */
+.canje-box{border:1px solid var(–orange-b);background:var(–orange-g);border-radius:var(–r);padding:.55rem .65rem;margin-top:.3rem}
+.canje-box .canje-hd{font-family:var(–mono);font-size:.44rem;color:var(–orange);letter-spacing:.08em;margin-bottom:.35rem}
+</style>
+
+</head>
+<body>
+<div class="app">
+
+<div class="hdr">
+  <div class="h-left"><span class="h-mark">CEF Pro</span><span class="h-pro">iPhone Manager</span></div>
+  <div class="h-rates">
+    <div class="h-pill"><span class="dot"></span>USD <span id="rB" style="color:var(--green)">—</span></div>
+    <div class="h-pill"><span class="dot"></span>USDT <span id="rU" style="color:var(--teal)">—</span></div>
+  </div>
+</div>
+
+<div class="nav-wrap">
+  <div class="nav">
+    <button class="nb on" onclick="go('dash')"><span class="ni">📊</span>Home</button>
+    <button class="nb" onclick="go('iphone')"><span class="ni">📱</span>iPhone</button>
+    <button class="nb" onclick="go('disp')"><span class="ni">💻</span>Dispositivos</button>
+    <button class="nb" onclick="go('acc')"><span class="ni">🎧</span>Accesorios</button>
+    <button class="nb" onclick="go('serv')"><span class="ni">🔧</span>Servicio</button>
+    <button class="nb" onclick="go('caja')"><span class="ni">📒</span>Caja</button>
+    <button class="nb" onclick="go('ventas')"><span class="ni">💰</span>Ventas</button>
+    <button class="nb" onclick="go('sim')"><span class="ni">🧮</span>Simular</button>
+    <button class="nb" onclick="go('leads')"><span class="ni">🎯</span>Leads</button>
+    <button class="nb" onclick="go('vend')"><span class="ni">👥</span>Equipo</button>
+    <button class="nb" onclick="go('gastos')"><span class="ni">🧾</span>Gastos</button>
+    <button class="nb" onclick="go('config')"><span class="ni">⚙️</span>Config</button>
+  </div>
+</div>
+
+<div class="views">
+
+<!-- DASH -->
+
+<div class="v on" id="v-dash">
+  <div class="ks" id="dK"></div>
+  <div class="sh"><span class="sh-t">Caja</span><button class="btn bgh bxs" onclick="openMo('moAjuste')">± Ajuste</button></div>
+  <div class="caja-row" id="dCaja"></div>
+  <div id="dAjustes"></div>
+  <div class="sh"><span class="sh-t">Stock por módulo</span></div>
+  <div id="dStock"></div>
+  <div class="sh"><span class="sh-t">Últimas ventas</span></div>
+  <div id="dV"></div>
+</div>
+
+<!-- IPHONE -->
+
+<div class="v" id="v-iphone">
+  <div class="sh"><span class="sh-t">iPhone</span><div style="display:flex;gap:.3rem"><button class="btn bb" onclick="openMo('moCompra','iphone')">+ Ingreso</button></div></div>
+  <div class="ks" id="ipK"></div>
+  <div class="pills" id="ipF"></div>
+  <div id="ipL"></div>
+</div>
+
+<!-- DISPOSITIVOS -->
+
+<div class="v" id="v-disp">
+  <div class="sh"><span class="sh-t">Dispositivos</span><button class="btn bb" onclick="openMo('moCompra','disp')">+ Ingreso</button></div>
+  <div class="ks" id="dpK"></div>
+  <div class="pills" id="dpF"></div>
+  <div id="dpL"></div>
+</div>
+
+<!-- ACCESORIOS -->
+
+<div class="v" id="v-acc">
+  <div class="sh"><span class="sh-t">Accesorios</span><button class="btn bb" onclick="openMo('moAccIngreso')">+ Ingreso</button></div>
+  <div class="ks" id="acK"></div>
+  <div class="pills" id="acF"></div>
+  <div id="acL"></div>
+</div>
+
+<!-- VENTAS -->
+
+<div class="v" id="v-ventas">
+  <div class="sh"><span class="sh-t">Ventas</span><button class="btn bgr" onclick="openMo('moVenta')">+ Venta</button></div>
+  <div class="ks" id="vtK"></div>
+  <div class="tw"><table><thead><tr><th>Fecha</th><th>Ítem</th><th>Módulo</th><th>Canal</th><th>Cliente / Vendedor</th><th>Ingreso</th><th>Margen</th><th>%</th></tr></thead><tbody id="tVt"></tbody></table></div>
+</div>
+
+<!-- GASTOS -->
+
+<div class="v" id="v-gastos">
+  <div class="sh"><span class="sh-t">Gastos</span><button class="btn bb" onclick="openMo('moGasto')">+ Gasto</button></div>
+  <div class="ks" id="gK"></div>
+  <div class="tw"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Monto</th><th>Moneda</th><th></th></tr></thead><tbody id="tG"></tbody></table></div>
+</div>
+
+<!-- CAJA / HISTORIAL -->
+
+<div class="v" id="v-caja">
+  <div class="sh"><span class="sh-t">Historial de caja</span><button class="btn bgh bxs" onclick="openMo('moAjuste')">± Ajuste</button></div>
+  <div class="ks" id="cajaK"></div>
+  <div class="pills" id="cajaFil"></div>
+  <div id="cajaList"></div>
+</div>
+
+<!-- SERVICIO TÉCNICO -->
+
+<div class="v" id="v-serv">
+  <div class="sh"><span class="sh-t">Servicio Técnico</span></div>
+  <div class="ks" id="svK"></div>
+  <div id="svL"></div>
+</div>
+
+<!-- LEADS -->
+
+<div class="v" id="v-leads">
+  <div class="sh"><span class="sh-t">Pipeline</span><button class="btn bb" onclick="openMo('moLead')">+ Lead</button></div>
+  <div class="pipe" id="pipe"></div>
+</div>
+
+<!-- SIMULADOR -->
+
+<div class="v" id="v-sim">
+  <div class="sh"><span class="sh-t">Simulador</span></div>
+
+  <!-- Ítems -->
+
+  <div class="gc">
+    <div style="font-family:var(--mono);font-size:.44rem;color:var(--blue2);letter-spacing:.08em;margin-bottom:.28rem">📦 ÍTEMS</div>
+    <div id="simItems"></div>
+    <button class="btn bgh" style="width:100%;font-size:.62rem" onclick="simAddItem()">＋ Agregar ítem</button>
+  </div>
+
+  <!-- TC + Canal -->
+
+  <div class="gc">
+    <div class="fr">
+      <div class="f"><label>TC venta</label><input id="simTc" type="number" inputmode="decimal" placeholder="0" oninput="simU()"/></div>
+      <div class="f"><label>Canal</label><select id="simCan" onchange="simU()"></select></div>
+    </div>
+  </div>
+
+  <!-- Tipo -->
+
+  <div style="display:flex;gap:.3rem">
+    <button id="simBtnDirect" class="btn bb"  style="flex:1;font-size:.68rem" onclick="simSetTipo('direct')">💵 Directa</button>
+    <button id="simBtnCanje"  class="btn bgh" style="flex:1;font-size:.68rem" onclick="simSetTipo('canje')">🔄 Con canje</button>
+  </div>
+
+  <!-- Canje -->
+
+  <div id="simSecCanje" class="gc" style="display:none">
+    <div style="font-family:var(--mono);font-size:.44rem;color:var(--orange);letter-spacing:.08em;margin-bottom:.28rem">🔄 EQUIPO QUE TOMA</div>
+    <div class="fr">
+      <div class="f"><label>Modelo tomado</label><select id="simCjMod" onchange="simCjModChange();simU()"><option value="">— Modelo —</option></select></div>
+      <div class="f"><label>Capacidad</label><select id="simCjCap" onchange="simU()"></select></div>
+    </div>
+    <div class="f"><label>Valor toma (USD)</label><input id="simCjVal" type="number" inputmode="decimal" placeholder="0" oninput="simU()"/></div>
+  </div>
+
+  <!-- Pagos -->
+
+  <div class="gc">
+    <div style="font-family:var(--mono);font-size:.44rem;color:var(--green);letter-spacing:.08em;margin-bottom:.28rem">💳 LO QUE ENTREGA EL CLIENTE</div>
+    <div id="simPagos"></div>
+    <button class="btn bgh" style="width:100%;font-size:.62rem;margin-top:.1rem" onclick="simAddPago()">＋ Agregar medio de pago</button>
+  </div>
+
+  <!-- Resultado -->
+
+  <div class="rb rb3" id="simRes"></div>
+  <div id="simRegWrap" style="display:none;margin-top:.4rem">
+    <button class="btn bgr" style="width:100%;font-size:.72rem" onclick="simToVenta()">💰 Registrar esta venta</button>
+  </div>
+</div>
+<!-- VENDEDORES -->
+<div class="v" id="v-vend">
+  <div class="sh"><span class="sh-t">Equipo</span><button class="btn bb" onclick="openMo('moVendedor')">+ Vendedor</button></div>
+  <div id="vL" style="display:flex;flex-direction:column;gap:.35rem"></div>
+  <div class="sh" style="margin-top:.2rem"><span class="sh-t">Ranking mes</span></div>
+  <div class="tw"><table><thead><tr><th>#</th><th>Vendedor</th><th>Ventas</th><th>Facturado</th><th>Margen</th></tr></thead><tbody id="tRk"></tbody></table></div>
+</div>
+
+<!-- CONFIG -->
+
+<div class="v" id="v-config">
+  <div class="sh"><span class="sh-t">Configuración</span></div>
+  <div class="gc">
+    <div style="font-weight:600;font-size:.72rem;margin-bottom:.35rem">Datos</div>
+    <div style="display:flex;gap:.25rem;flex-wrap:wrap">
+      <button class="btn bgh" onclick="xport()">💾 Exportar</button>
+      <button class="btn bgh" onclick="$('impF').click()">📂 Importar</button>
+      <button class="btn bre" onclick="rst()">🗑 Reset</button>
+      <input type="file" id="impF" accept=".json" style="display:none" onchange="imp(event)"/>
+    </div>
+  </div>
+  <div class="gc">
+    <div style="font-weight:600;font-size:.72rem;margin-bottom:.35rem">Canales de venta</div>
+    <div id="cfgCan"></div>
+    <div style="display:flex;gap:.2rem;margin-top:.3rem">
+      <input id="newCanN" placeholder="Canal" style="flex:2;padding:.35rem .55rem;background:var(--w6);border:1px solid var(--brd);border-radius:9px;color:var(--w);font-size:.74rem"/>
+      <input id="newCanC" placeholder="Costo %" type="number" inputmode="decimal" style="width:60px;padding:.35rem .45rem;background:var(--w6);border:1px solid var(--brd);border-radius:9px;color:var(--orange);font-size:.74rem;text-align:center"/>
+      <button class="btn bb bxs" onclick="addCan()">+</button>
+    </div>
+  </div>
+  <div class="gc">
+    <div style="font-weight:600;font-size:.72rem;margin-bottom:.35rem">Medios de pago</div>
+    <div id="cfgMed"></div>
+    <div style="display:flex;gap:.2rem;margin-top:.3rem">
+      <input id="newMedN" placeholder="Medio" style="flex:2;padding:.35rem .55rem;background:var(--w6);border:1px solid var(--brd);border-radius:9px;color:var(--w);font-size:.74rem"/>
+      <input id="newMedC" placeholder="Costo %" type="number" inputmode="decimal" style="width:60px;padding:.35rem .45rem;background:var(--w6);border:1px solid var(--brd);border-radius:9px;color:var(--orange);font-size:.74rem;text-align:center"/>
+      <button class="btn bb bxs" onclick="addMed()">+</button>
+    </div>
+  </div>
+  <div class="gc">
+    <div style="font-weight:600;font-size:.72rem;margin-bottom:.35rem">Categorías de accesorios</div>
+    <div id="cfgAccCat"></div>
+    <div style="display:flex;gap:.2rem;margin-top:.3rem">
+      <input id="newAccCatN" placeholder="Ej: Fundas, Cables..." style="flex:1;padding:.35rem .55rem;background:var(--w6);border:1px solid var(--brd);border-radius:9px;color:var(--w);font-size:.74rem"/>
+      <button class="btn bb bxs" onclick="addAccCat()">+</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /views -->
+</div><!-- /app -->
+
+<!-- ═══════════════ MODALS ═══════════════ -->
+
+<!-- Compra (iPhone / Dispositivos) -->
+
+<div class="mo-bg" id="moCompra"><div class="mo"><div class="mo-bar"></div>
+<div class="mo-hd"><span class="mo-t" id="moCompraTitle">Ingreso de equipo</span><button class="mo-x" onclick="closeMo('moCompra')">✕</button></div>
+<div class="mo-bd">
+  <input type="hidden" id="cModulo" value="iphone"/>
+  <div class="f" id="cModF"><label>Modelo</label><select id="cMod" onchange="cModCh()"></select></div>
+  <div class="f" id="cDispModF" style="display:none"><label>Tipo de dispositivo</label>
+    <select id="cDispTipo" onchange="cDispTipoCh()">
+      <option>Samsung Galaxy</option><option>iPad</option><option>MacBook</option><option>Apple Watch</option><option>AirPods</option><option>Tablet Android</option><option>Notebook</option><option>Consola</option><option>Otro</option>
+    </select>
+  </div>
+  <div class="f" id="cDispNomF" style="display:none"><label>Descripción del dispositivo</label><input id="cDispNom" placeholder="Ej: Samsung Galaxy S24 128GB"/></div>
+  <div class="fr">
+    <div class="f" id="cCapWrap"><label>Capacidad</label><select id="cCap"></select></div>
+    <div class="f"><label>Color</label><select id="cCol"></select></div>
+  </div>
+  <div class="f"><label>Estado</label><select id="cEst"><option>Nuevo sellado</option><option>Nuevo open box</option><option>Usado A+</option><option>Usado A</option><option>Usado B</option><option>Reacondicionado</option></select></div>
+  <div class="f"><label>IMEI / Serie (opcional)</label><input id="cImei" inputmode="numeric" maxlength="20"/></div>
+  <div class="fr3">
+    <div class="f"><label>Moneda costo</label><select id="cMoneda"><option>USD</option><option>ARS</option><option>USDT</option></select></div>
+    <div class="f"><label>Costo</label><input id="cCosto" type="number" inputmode="decimal" placeholder="0"/></div>
+    <div class="f"><label>TC (si ARS)</label><input id="cTc" type="number" inputmode="decimal" placeholder="0"/></div>
+  </div>
+  <div class="f"><label>Precio venta sugerido (USD)</label><input id="cPrecio" type="number" inputmode="decimal" placeholder="0"/></div>
+  <div class="f"><label>Proveedor</label><input id="cProv" placeholder="Opcional"/></div>
+</div>
+<div class="mo-ft"><button class="btn bgh" onclick="closeMo('moCompra')">Cancelar</button><button class="btn bb" onclick="saveC()">Guardar</button></div>
+</div></div>
+
+<!-- Accesorio ingreso -->
+
+<div class="mo-bg" id="moAccIngreso"><div class="mo"><div class="mo-bar"></div>
+<div class="mo-hd"><span class="mo-t">Ingreso de accesorio</span><button class="mo-x" onclick="closeMo('moAccIngreso')">✕</button></div>
+<div class="mo-bd">
+  <div class="f"><label>Nombre / Descripción</label><input id="acNom" placeholder="Ej: Funda MagSafe iPhone 15 Pro"/></div>
+  <div class="fr">
+    <div class="f"><label>Categoría</label><select id="acCat"></select></div>
+    <div class="f"><label>Marca</label><input id="acMarca" placeholder="Ej: Apple, Belkin..."/></div>
+  </div>
+  <div class="f"><label>Compatible con</label><input id="acCompat" placeholder="Ej: iPhone 15 Pro / Universal"/></div>
+  <div class="fr">
+    <div class="f"><label>Cantidad</label><input id="acCant" type="number" inputmode="numeric" value="1" min="1"/></div>
+    <div class="f"><label>Estado</label><select id="acEst"><option>Nuevo</option><option>Usado</option><option>Reacondicionado</option></select></div>
+  </div>
+  <div class="fr3">
+    <div class="f"><label>Moneda</label><select id="acMoneda"><option>USD</option><option>ARS</option><option>USDT</option></select></div>
+    <div class="f"><label>Costo unit.</label><input id="acCosto" type="number" inputmode="decimal" placeholder="0"/></div>
+    <div class="f"><label>TC (si ARS)</label><input id="acTc" type="number" inputmode="decimal" placeholder="0"/></div>
+  </div>
+  <div class="f"><label>Precio venta (USD)</label><input id="acPrecio" type="number" inputmode="decimal" placeholder="0"/></div>
+</div>
+<div class="mo-ft"><button class="btn bgh" onclick="closeMo('moAccIngreso')">Cancelar</button><button class="btn bb" onclick="saveAcc()">Guardar</button></div>
+</div></div>
+
+<!-- Venta -->
+
+<div class="mo-bg" id="moVenta"><div class="mo"><div class="mo-bar"></div>
+<div class="mo-hd"><span class="mo-t">Registrar venta</span><button class="mo-x" onclick="closeMo('moVenta')">✕</button></div>
+<div class="mo-bd">
+
+  <!-- PASO 1: TIPO -->
+
+  <div style="font-family:var(--mono);font-size:.44rem;color:var(--blue2);letter-spacing:.08em;margin-bottom:.3rem">TIPO DE OPERACIÓN</div>
+  <div style="display:flex;gap:.3rem;margin-bottom:.55rem">
+    <button id="vtBtnDirect" class="btn bb" style="flex:1;font-size:.7rem" onclick="vtSetTipo('direct')">💵 Venta directa</button>
+    <button id="vtBtnCanje"  class="btn bgh" style="flex:1;font-size:.7rem" onclick="vtSetTipo('canje')">🔄 Con canje</button>
+  </div>
+
+  <!-- PASO 2: CANJE (visible solo si tipo=canje) -->
+
+  <div id="vtSecCanje" style="display:none">
+    <div style="font-family:var(--mono);font-size:.44rem;color:var(--orange);letter-spacing:.08em;margin-bottom:.3rem">🔄 EQUIPO QUE ENTREGA EL CLIENTE</div>
+    <div class="fr">
+      <div class="f"><label>Modelo tomado</label><select id="vtCjMod" onchange="vtCjCh();vtU()"><option value="">— Modelo —</option></select></div>
+      <div class="f"><label>Capacidad</label><select id="vtCjCap" onchange="vtU()"></select></div>
+    </div>
+    <div class="fr">
+      <div class="f"><label>Estado</label><select id="vtCjEst" onchange="vtU()"><option>Usado A+</option><option>Usado A</option><option>Usado B</option><option>No funcional</option></select></div>
+      <div class="f"><label>Valor toma (USD)</label><input id="vtCjVal" type="number" inputmode="decimal" placeholder="0" oninput="vtU()"/></div>
+    </div>
+    <div class="fr">
+      <div class="f"><label>IMEI tomado</label><input id="vtCjImei" inputmode="numeric" maxlength="20" placeholder="Opcional"/></div>
+      <div class="f"><label>¿Arreglo? Costo est. (USD)</label><input id="vtCjRep" type="number" inputmode="decimal" placeholder="0"/></div>
+    </div>
+    <div class="f"><label>Notas del equipo tomado</label><input id="vtCjNota" placeholder="Ej: pantalla rayada, batería 80%..."/></div>
+    <div style="border-top:1px solid var(--brd);margin:.4rem 0 .35rem"></div>
+  </div>
+
+  <!-- PASO 3: ÍTEMS VENDIDOS -->
+
+  <div style="font-family:var(--mono);font-size:.44rem;color:var(--blue2);letter-spacing:.08em;margin-bottom:.3rem">📦 ÍTEMS VENDIDOS</div>
+  <div id="vtItems"></div>
+  <button class="btn bgh" style="width:100%;margin-bottom:.5rem;font-size:.64rem" onclick="vtAddItem()">＋ Agregar ítem</button>
+
+  <!-- PASO 4: MEDIOS DE PAGO -->
+
+  <div style="border-top:1px solid var(--brd);margin:.15rem 0 .35rem"></div>
+  <div style="font-family:var(--mono);font-size:.44rem;color:var(--green);letter-spacing:.08em;margin-bottom:.3rem">💳 LO QUE ENTREGA EL CLIENTE</div>
+  <div id="vtPagos"></div>
+  <button class="btn bgh" style="width:100%;margin-bottom:.5rem;font-size:.64rem" onclick="vtAddPago()">＋ Agregar medio de pago</button>
+
+  <!-- CONDICIONES -->
+
+  <div style="border-top:1px solid var(--brd);margin:.15rem 0 .35rem"></div>
+  <div style="font-family:var(--mono);font-size:.44rem;color:var(--w4);letter-spacing:.08em;margin-bottom:.3rem">⚙️ CONDICIONES</div>
+  <div class="fr">
+    <div class="f"><label>TC venta</label><input id="vtTc" type="number" inputmode="decimal" placeholder="0" oninput="vtU()"/></div>
+    <div class="f"><label>Fecha</label><input id="vtF" type="date"/></div>
+  </div>
+  <div class="fr">
+    <div class="f"><label>Canal</label><select id="vtCan" onchange="vtU()"></select></div>
+    <div class="f"><label>Vendedor</label><select id="vtVd"></select></div>
+  </div>
+
+  <!-- CLIENTE -->
+
+  <div style="border-top:1px solid var(--brd);margin:.35rem 0 .3rem"></div>
+  <div style="font-family:var(--mono);font-size:.44rem;color:var(--w3);letter-spacing:.08em;margin-bottom:.3rem">👤 CLIENTE (OPCIONAL)</div>
+  <div class="fr">
+    <div class="f"><label>Nombre</label><input id="vtClNom" placeholder="Ej: Franco Martínez"/></div>
+    <div class="f"><label>WhatsApp</label><input id="vtClWa" inputmode="tel" placeholder="+549..."/></div>
+  </div>
+  <div class="f"><label>Vincular lead</label><select id="vtLead"><option value="">— Sin lead —</option></select></div>
+
+  <!-- RESUMEN -->
+
+  <div style="border-top:1px solid var(--brd);margin:.4rem 0 .3rem"></div>
+  <div id="vtCosts" class="cost-hint" style="margin-bottom:.25rem"></div>
+  <div class="rb rb3" id="vtPrev"></div>
+</div>
+<div class="mo-ft"><button class="btn bgh" onclick="closeMo('moVenta')">Cancelar</button><button class="btn bgr" onclick="saveVt()">Confirmar venta</button></div>
+</div></div>
+<!-- Gasto -->
+<div class="mo-bg" id="moGasto"><div class="mo"><div class="mo-bar"></div>
+<div class="mo-hd"><span class="mo-t">Nuevo gasto</span><button class="mo-x" onclick="closeMo('moGasto')">✕</button></div>
+<div class="mo-bd">
+  <div class="f"><label>Concepto</label><input id="gConc" placeholder="Ej: Alquiler local"/></div>
+  <div class="fr">
+    <div class="f"><label>Categoría</label><select id="gCat"><option>Alquiler</option><option>Sueldos</option><option>Publicidad</option><option>Servicios</option><option>Impuestos</option><option>Logística</option><option>Comisiones</option><option>Otro</option></select></div>
+    <div class="f"><label>Fecha</label><input id="gFecha" type="date"/></div>
+  </div>
+  <div class="fr">
+    <div class="f"><label>Monto</label><input id="gMonto" type="number" inputmode="decimal" placeholder="0"/></div>
+    <div class="f"><label>Moneda</label><select id="gMon"><option>ARS</option><option>USD</option><option>USDT</option></select></div>
+  </div>
+</div>
+<div class="mo-ft"><button class="btn bgh" onclick="closeMo('moGasto')">Cancelar</button><button class="btn bb" onclick="saveG()">Guardar</button></div>
+</div></div>
+
+<!-- Lead -->
+
+<div class="mo-bg" id="moLead"><div class="mo"><div class="mo-bar"></div>
+<div class="mo-hd"><span class="mo-t">Nuevo lead</span><button class="mo-x" onclick="closeMo('moLead')">✕</button></div>
+<div class="mo-bd">
+  <div class="f"><label>Nombre</label><input id="ldN"/></div>
+  <div class="f"><label>WhatsApp</label><input id="ldT" inputmode="tel"/></div>
+  <div class="f"><label>Interesado en</label><select id="ldInt"></select></div>
+  <div class="fr">
+    <div class="f"><label>Presupuesto USD</label><input id="ldB" type="number" inputmode="decimal" placeholder="0"/></div>
+    <div class="f"><label>Canal origen</label><select id="ldC"></select></div>
+  </div>
+  <div class="f"><label>Notas</label><input id="ldNo"/></div>
+</div>
+<div class="mo-ft"><button class="btn bgh" onclick="closeMo('moLead')">Cancelar</button><button class="btn bb" onclick="saveLd()">Guardar</button></div>
+</div></div>
+
+<!-- Lead detail -->
+
+<div class="mo-bg" id="moLD"><div class="mo"><div class="mo-bar"></div>
+<div class="mo-hd"><span class="mo-t" id="ldDT">Lead</span><button class="mo-x" onclick="closeMo('moLD')">✕</button></div>
+<div class="mo-bd" id="ldDB"></div>
+<div class="mo-ft" id="ldDF"></div>
+</div></div>
+
+<!-- Servicio técnico modal -->
+
+<div class="mo-bg" id="moServ"><div class="mo"><div class="mo-bar"></div>
+<div class="mo-hd"><span class="mo-t">Enviar a técnico</span><button class="mo-x" onclick="closeMo('moServ')">✕</button></div>
+<div class="mo-bd">
+  <input type="hidden" id="svStockId"/>
+  <div id="svEqInfo" style="padding:.4rem .6rem;background:var(--w6);border:1px solid var(--brd);border-radius:11px;margin-bottom:.45rem;font-size:.64rem;color:var(--w3)"></div>
+  <div class="f"><label>Descripción del problema</label><input id="svDesc" placeholder="Ej: Pantalla rota, batería baja..."/></div>
+  <div class="f"><label>Técnico / Taller</label><input id="svTech" placeholder="Opcional"/></div>
+  <div class="fr">
+    <div class="f"><label>Costo estimado (USD)</label><input id="svCostEst" type="number" inputmode="decimal" placeholder="0"/></div>
+    <div class="f"><label>Fecha ingreso</label><input id="svFecha" type="date"/></div>
+  </div>
+</div>
+<div class="mo-ft"><button class="btn bgh" onclick="closeMo('moServ')">Cancelar</button><button class="btn bor" onclick="saveServ()">Enviar a técnico</button></div>
+</div></div>
+
+<!-- Marcar arreglado modal -->
+
+<div class="mo-bg" id="moServDone"><div class="mo" style="max-height:50vh"><div class="mo-bar"></div>
+<div class="mo-hd"><span class="mo-t">Marcar como arreglado</span><button class="mo-x" onclick="closeMo('moServDone')">✕</button></div>
+<div class="mo-bd">
+  <input type="hidden" id="svDoneId"/>
+  <div class="f"><label>Costo real del arreglo (USD)</label><input id="svDoneCost" type="number" inputmode="decimal" placeholder="0"/></div>
+  <div class="f"><label>Nuevo estado del equipo</label><select id="svDoneEst"><option>Usado A+</option><option>Usado A</option><option>Usado B</option><option>Reacondicionado</option></select></div>
+</div>
+<div class="mo-ft"><button class="btn bgh" onclick="closeMo('moServDone')">Cancelar</button><button class="btn bgr" onclick="confirmServDone()">Confirmar arreglo</button></div>
+</div></div>
+
+<!-- Vendedor -->
+
+<div class="mo-bg" id="moVendedor"><div class="mo" style="max-height:42vh"><div class="mo-bar"></div>
+<div class="mo-hd"><span class="mo-t">Nuevo vendedor</span><button class="mo-x" onclick="closeMo('moVendedor')">✕</button></div>
+<div class="mo-bd"><div class="f"><label>Nombre</label><input id="vdN"/></div></div>
+<div class="mo-ft"><button class="btn bgh" onclick="closeMo('moVendedor')">Cancelar</button><button class="btn bb" onclick="saveVd()">Guardar</button></div>
+</div></div>
+
+<script>
+// ══════════════════════════════════════════
+// CATALOG
+// ══════════════════════════════════════════
+const CAT_IPHONE=[
+  {m:'iPhone 11',c:['64GB','128GB'],cl:['Negro','Blanco','Verde','Amarillo','Morado','Rojo']},
+  {m:'iPhone 11 Pro',c:['64GB','256GB','512GB'],cl:['Gris espacial','Plata','Oro','Verde noche']},
+  {m:'iPhone 11 Pro Max',c:['64GB','256GB','512GB'],cl:['Gris espacial','Plata','Oro','Verde noche']},
+  {m:'iPhone 12 mini',c:['64GB','128GB','256GB'],cl:['Negro','Blanco','Azul','Verde','Rojo']},
+  {m:'iPhone 12',c:['64GB','128GB','256GB'],cl:['Negro','Blanco','Azul','Verde','Rojo']},
+  {m:'iPhone 12 Pro',c:['128GB','256GB','512GB'],cl:['Grafito','Plata','Oro','Azul pacífico']},
+  {m:'iPhone 12 Pro Max',c:['128GB','256GB','512GB'],cl:['Grafito','Plata','Oro','Azul pacífico']},
+  {m:'iPhone 13 mini',c:['128GB','256GB','512GB'],cl:['Medianoche','Blanco estrella','Azul','Rosa','Verde','Rojo']},
+  {m:'iPhone 13',c:['128GB','256GB','512GB'],cl:['Medianoche','Blanco estrella','Azul','Rosa','Verde','Rojo']},
+  {m:'iPhone 13 Pro',c:['128GB','256GB','512GB','1TB'],cl:['Grafito','Plata','Oro','Azul sierra','Verde alpino']},
+  {m:'iPhone 13 Pro Max',c:['128GB','256GB','512GB','1TB'],cl:['Grafito','Plata','Oro','Azul sierra','Verde alpino']},
+  {m:'iPhone 14',c:['128GB','256GB','512GB'],cl:['Medianoche','Blanco estrella','Azul','Morado','Rojo','Amarillo']},
+  {m:'iPhone 14 Plus',c:['128GB','256GB','512GB'],cl:['Medianoche','Blanco estrella','Azul','Morado','Rojo','Amarillo']},
+  {m:'iPhone 14 Pro',c:['128GB','256GB','512GB','1TB'],cl:['Negro espacial','Plata','Oro','Morado oscuro']},
+  {m:'iPhone 14 Pro Max',c:['128GB','256GB','512GB','1TB'],cl:['Negro espacial','Plata','Oro','Morado oscuro']},
+  {m:'iPhone 15',c:['128GB','256GB','512GB'],cl:['Negro','Azul','Verde','Amarillo','Rosa']},
+  {m:'iPhone 15 Plus',c:['128GB','256GB','512GB'],cl:['Negro','Azul','Verde','Amarillo','Rosa']},
+  {m:'iPhone 15 Pro',c:['128GB','256GB','512GB','1TB'],cl:['Titanio negro','Titanio blanco','Titanio natural','Titanio azul']},
+  {m:'iPhone 15 Pro Max',c:['256GB','512GB','1TB'],cl:['Titanio negro','Titanio blanco','Titanio natural','Titanio azul']},
+  {m:'iPhone 16',c:['128GB','256GB','512GB'],cl:['Negro','Blanco','Azul ultramar','Verde azulado','Rosa']},
+  {m:'iPhone 16 Plus',c:['128GB','256GB','512GB'],cl:['Negro','Blanco','Azul ultramar','Verde azulado','Rosa']},
+  {m:'iPhone 16 Pro',c:['128GB','256GB','512GB','1TB'],cl:['Titanio negro','Titanio blanco','Titanio natural','Titanio desierto']},
+  {m:'iPhone 16 Pro Max',c:['256GB','512GB','1TB'],cl:['Titanio negro','Titanio blanco','Titanio natural','Titanio desierto']},
+  {m:'iPhone 16e',c:['128GB','256GB','512GB'],cl:['Negro','Blanco','Rosa']},
+  {m:'iPhone 17',c:['128GB','256GB','512GB'],cl:['Negro','Blanco','Azul','Verde','Rosa']},
+  {m:'iPhone 17 Air',c:['256GB','512GB'],cl:['Negro','Blanco estelar','Azul cielo','Verde jade']},
+  {m:'iPhone 17 Pro',c:['256GB','512GB','1TB'],cl:['Titanio negro','Titanio blanco','Titanio natural','Titanio verde']},
+  {m:'iPhone 17 Pro Max',c:['256GB','512GB','1TB'],cl:['Titanio negro','Titanio blanco','Titanio natural','Titanio verde']},
+  {m:'iPhone SE (3ra gen)',c:['64GB','128GB','256GB'],cl:['Medianoche','Blanco estrella','Rojo']},
+];
+
+// Combined for canje selector (all models)
+const ALL_MODELS = CAT_IPHONE;
+
+// ══════════════════════════════════════════
+// DATA & PERSISTENCE
+// ══════════════════════════════════════════
+const KEY='cef_pro_v4';
+const DEF={
+  // stock: {id, modulo:'iphone'|'disp'|'acc', modelo, capacidad, color, estadoEq, imei, costoOrig, costoMoneda, costoTc, costoUsd, precio, proveedor, status:'stock'|'vendido', fecha, servicio:{...}?, repairCost?}
+  stock:[],
+  ventas:[],leads:[],vendedores:[],gastos:[],
+  canales:[{n:'Local',cost:0},{n:'Instagram',cost:0},{n:'MercadoLibre',cost:13},{n:'WhatsApp',cost:0},{n:'Referido',cost:0}],
+  medios:[{n:'Efectivo USD',cost:0},{n:'Efectivo ARS',cost:0},{n:'Transferencia',cost:0},{n:'MercadoPago',cost:4.5},{n:'Tarjeta crédito',cost:8},{n:'USDT',cost:0},{n:'Mixto',cost:0}],
+  accCats:['Funda','Cable','Cargador','Auriculares','Vidrio templado','Soporte','Adaptador','Otro'],
+  cajaArs:0,cajaUsd:0,cajaUsdt:0,
+  ajustesCaja:[],
+  tcBlue:null,tcUsdt:null,
+  stockFilterIphone:'stock',stockFilterDisp:'stock',stockFilterAcc:'todos',
+  nextId:100
+};
+let D=structuredClone(DEF);
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}};
+const load=()=>{try{const r=localStorage.getItem(KEY);if(r){D={...DEF,...JSON.parse(r)};return true}}catch(e){}return false};
+
+const uid=()=>D.nextId++;
+const $=id=>document.getElementById(id);
+const fm=n=>'U$D '+Math.round(n||0).toLocaleString('es-AR');
+const fa=n=>'$'+Math.round(n||0).toLocaleString('es-AR');
+const fu=n=>'USDT '+Math.round(n||0).toLocaleString('es-AR');
+const fmon=(n,mon)=>mon==='USD'?fm(n):mon==='USDT'?fu(n):fa(n);
+const pct=n=>(n||0).toFixed(1)+'%';
+const td=()=>new Date().toISOString().split('T')[0];
+const fD=d=>{if(!d)return'—';const p=d.split('-');return p.length===3?`${p[2]}/${p[1]}`:d};
+const canCost=name=>{const c=D.canales.find(x=>x.n===name);return c?c.cost||0:0};
+const medCost=name=>{const m=D.medios.find(x=>x.n===name);return m?m.cost||0:0};
+function toUsd(amount,currency,tc){
+  if(currency==='USD')return amount;
+  if(currency==='USDT')return amount;
+  return tc>0?amount/tc:0;
+}
+const modIcon=mod=>mod==='iphone'?'📱':mod==='disp'?'💻':mod==='acc'?'🎧':'📦';
+const modLabel=mod=>mod==='iphone'?'iPhone':mod==='disp'?'Dispositivos':mod==='acc'?'Accesorio':'—';
+
+let tcB=0,tcU=0;
+async function fetchTC(){
+  try{
+    const[bR,uR]=await Promise.all([
+      fetch('https://dolarapi.com/v1/dolares/blue').then(r=>r.json()).catch(()=>null),
+      fetch('https://criptoya.com/api/usdt/ars').then(r=>r.json()).catch(()=>null)
+    ]);
+    if(bR?.venta){tcB=bR.venta;$('rB').textContent=fa(tcB)}
+    if(uR){const vs=Object.values(uR).filter(v=>v?.totalAsk);if(vs.length){tcU=Math.round(vs.reduce((s,v)=>s+v.totalAsk,0)/vs.length);$('rU').textContent=fa(tcU)}}
+    D.tcBlue=tcB;D.tcUsdt=tcU;save();
+  }catch(e){if(D.tcBlue){tcB=D.tcBlue;tcU=D.tcUsdt||0;$('rB').textContent=fa(tcB);$('rU').textContent=fa(tcU)}}
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+function go(n){
+  document.querySelectorAll('.v').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  $('v-'+n).classList.add('on');
+  document.querySelectorAll('.nb').forEach(b=>{if(b.getAttribute('onclick')?.includes("'"+n+"'"))b.classList.add('on')});
+  R[n]?.();document.querySelector('.views').scrollTop=0;
+}
+const R={dash:rD,iphone:()=>rStock('iphone'),disp:()=>rStock('disp'),acc:rAcc,ventas:rVt,gastos:rG,caja:rCajaHist,serv:rServ,leads:rL,sim:rSim,vend:rVd,config:rCfg};
+
+// ══════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════
+function rD(){
+  const inStock=mod=>D.stock.filter(s=>s.status==='stock'&&s.modulo===mod);
+  const ip=inStock('iphone'),dp=inStock('disp'),ac=inStock('acc');
+  const vm=D.ventas.filter(v=>v.fecha?.substring(0,7)===td().substring(0,7));
+  const fac=vm.reduce((s,v)=>s+v.precioUsd,0);
+  const mar=vm.reduce((s,v)=>s+v.margenUsd,0);
+  const lp=D.leads.filter(l=>l.estado!=='Cerrado ganado'&&l.estado!=='Perdido').length;
+  const gMes=D.gastos.filter(g=>g.fecha?.substring(0,7)===td().substring(0,7));
+  const gTotal=gMes.reduce((s,g)=>s+toUsd(g.monto,g.moneda,tcB||1),0);
+  const svPend=D.stock.filter(s=>s.servicio&&!s.servicio.done).length;
+
+  $('dK').innerHTML=`
+    <div class="ki" data-c="green"><div class="ki-l">Vendido mes</div><div class="ki-v tg">${fm(fac)}</div><div class="ki-s">${vm.length} ventas</div></div>
+    <div class="ki" data-c="orange"><div class="ki-l">Margen mes</div><div class="ki-v to">${fm(mar)}</div><div class="ki-s">${fac?pct(mar/fac*100):'0%'}</div></div>
+    <div class="ki" data-c="red"><div class="ki-l">Gastos mes</div><div class="ki-v tr">${fm(gTotal)}</div></div>
+    <div class="ki" data-c="purple"><div class="ki-l">Leads</div><div class="ki-v">${lp}</div><div class="ki-s">activos</div></div>
+    ${svPend?`<div class="ki" data-c="orange"><div class="ki-l">En técnico</div><div class="ki-v to">${svPend}</div><div class="ki-s">pendientes</div></div>`:''}`;
+
+  $('dCaja').innerHTML=`
+    <div class="caja-c"><div class="caja-cur">ARS</div><div class="caja-val ${D.cajaArs>=0?'tg':'tr'}">${fa(D.cajaArs)}</div></div>
+    <div class="caja-c"><div class="caja-cur">USD</div><div class="caja-val ${D.cajaUsd>=0?'tg':'tr'}">${fm(D.cajaUsd)}</div></div>
+    <div class="caja-c"><div class="caja-cur">USDT</div><div class="caja-val ${D.cajaUsdt>=0?'ttl':'tr'}">${fu(D.cajaUsdt)}</div></div>`;
+
+  // Recent ajustes
+  const recentAj=(D.ajustesCaja||[]).slice(-4).reverse();
+  $('dAjustes').innerHTML=recentAj.length?`<div style="display:flex;flex-direction:column;gap:.18rem;margin-top:.25rem">`+recentAj.map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.28rem .55rem;background:var(--glass2);border:1px solid var(--brd);border-radius:9px;font-size:.62rem">
+    <span style="color:var(--w3)">${fD(a.fecha)} · ${a.motivo||'Ajuste manual'}</span>
+    <span class="tm ${a.delta>=0?'tg':'tr'}" style="font-size:.64rem">${a.delta>=0?'+':''}${fmon(a.delta,a.mon)}</span>
+  </div>`).join('')+`</div>`:'';
+
+  $('dStock').innerHTML=`
+    <div class="gc" style="padding:.5rem .65rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem"><span style="font-weight:600;font-size:.7rem">📱 iPhone</span><span class="bd bd-b">${ip.length} u. · ${fm(ip.reduce((s,e)=>s+e.costoUsd,0))}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.35rem"><span style="font-weight:600;font-size:.7rem">💻 Dispositivos</span><span class="bd bd-p">${dp.length} u. · ${fm(dp.reduce((s,e)=>s+e.costoUsd,0))}</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:.7rem">🎧 Accesorios</span><span class="bd bd-t">${ac.length} u. · ${fm(ac.reduce((s,e)=>s+e.costoUsd,0))}</span></div>
+    </div>`;
+
+  const last=[...D.ventas].reverse().slice(0,5);
+  $('dV').innerHTML=last.length?last.map(v=>`<div class="sc fade"><div class="sc-i">${modIcon(v.modulo||'iphone')}</div><div class="sc-info"><div class="sc-m">${v.modelo}</div><div class="sc-s">${v.canal} · ${v.vendedor||'—'} · ${fD(v.fecha)}</div></div><div class="sc-r"><div class="sc-p tg">${fm(v.precioUsd)}</div><div class="sc-mg ${v.margenPct>=20?'tg':v.margenPct>=10?'to':'tr'}">Neto ${fm(v.netoUsd)} · ${pct(v.margenPct)}</div></div></div>`).join(''):'<div class="emp"><span class="emp-i">📱</span><span class="emp-t">Sin ventas aún</span></div>';
+}
+
+// ══════════════════════════════════════════
+// STOCK COMPACTO (iPhone / Dispositivos) - grouped by model
+// ══════════════════════════════════════════
+function rStock(mod){
+  const filterKey=mod==='iphone'?'stockFilterIphone':'stockFilterDisp';
+  const f=D[filterKey];
+  const all=D.stock.filter(s=>s.modulo===mod);
+  const fil=f==='todos'?all:all.filter(s=>s.status===f);
+  const inS=all.filter(s=>s.status==='stock');
+
+  const kpiEl=mod==='iphone'?$('ipK'):$('dpK');
+  const filterEl=mod==='iphone'?$('ipF'):$('dpF');
+  const listEl=mod==='iphone'?$('ipL'):$('dpL');
+
+  kpiEl.innerHTML=`
+    <div class="ki" data-c="blue"><div class="ki-l">En stock</div><div class="ki-v">${inS.length}</div></div>
+    <div class="ki" data-c="red"><div class="ki-l">Inversión</div><div class="ki-v tr">${fm(inS.reduce((s,e)=>s+e.costoUsd,0))}</div></div>
+    <div class="ki" data-c="green"><div class="ki-l">Val. venta</div><div class="ki-v tg">${fm(inS.reduce((s,e)=>s+(e.precio||0),0))}</div></div>
+    <div class="ki" data-c="orange"><div class="ki-l">En técnico</div><div class="ki-v to">${all.filter(s=>s.servicio&&!s.servicio.done).length}</div></div>`;
+
+  filterEl.innerHTML=['todos','stock','vendido'].map(e=>`<button class="pill${f===e?' on':''}" onclick="D['${filterKey}']='${e}';save();rStock('${mod}')">${{todos:'Todos',stock:'En stock',vendido:'Vendidos'}[e]}</button>`).join('');
+
+  if(!fil.length){listEl.innerHTML='<div class="emp"><span class="emp-i">📦</span><span class="emp-t">Sin equipos</span></div>';return;}
+
+  // Group by modelo
+  const groups={};
+  fil.forEach(e=>{
+    const key=e.modelo;
+    if(!groups[key])groups[key]={modelo:key,items:[]};
+    groups[key].items.push(e);
+  });
+
+  listEl.innerHTML=Object.values(groups).map(g=>{
+    const inStockItems=g.items.filter(i=>i.status==='stock');
+    const soldItems=g.items.filter(i=>i.status==='vendido');
+    const servItems=g.items.filter(i=>i.servicio&&!i.servicio.done);
+    const totalCost=g.items.reduce((s,i)=>s+i.costoUsd,0);
+    const avgCost=totalCost/g.items.length;
+
+    const unitRows=g.items.map(e=>{
+      const hasSv=e.servicio&&!e.servicio.done;
+      const wasSv=e.servicio&&e.servicio.done;
+      return`<div class="mg-unit" onclick="openHistorial(${e.id})" style="cursor:pointer">
+        <div class="mu-info">
+          <div class="mu-top">
+            <span style="font-weight:600">${e.capacidad||''} ${e.color?'· '+e.color:''}</span>
+            <span class="bd ${e.status==='vendido'?'bd-g':'bd-b'}">${e.status==='vendido'?'Vendido':'Stock'}</span>
+            ${hasSv?`<span class="serv-tag">🔧 Técnico</span>`:''}
+            ${wasSv?`<span class="serv-tag" style="background:var(--green-g);color:var(--green);border-color:var(--green-b)">✅ Arreglado +${fm(e.servicio.repairCostReal||0)}</span>`:''}
+          </div>
+          <div class="mu-bot">${e.estadoEq||''} ${e.imei?'· IMEI: '+e.imei:''} ${e.proveedor?'· '+e.proveedor:''}</div>
+        </div>
+        <div class="mu-r" style="font-family:var(--mono);font-size:.62rem">
+          <div class="tg">${fm(e.precio||0)}</div>
+          <div style="color:var(--w4);font-size:.5rem">costo ${fm(e.costoUsd)}</div>
+          ${e.status==='stock'?`<div style="display:flex;gap:.2rem;margin-top:.2rem">
+            <button class="btn bor bxs" onclick="event.stopPropagation();openServModal(${e.id})">🔧</button>
+            <button class="btn bre bxs" onclick="event.stopPropagation();delStock(${e.id})">✕</button>
+          </div>`:''}
+          ${hasSv?`<button class="btn bgr bxs" style="margin-top:.2rem" onclick="event.stopPropagation();openServDone(${e.id})">✅ Arreglado</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+
+    const mgKey = 'k'+g.modelo.replace(/[^a-zA-Z0-9]/g,'_');
+    return`<div class="mg" id="mg-${mgKey}">
+      <div class="mg-hd" onclick="toggleMg('${mgKey}')">
+        <div class="mg-ico">${modIcon(mod)}</div>
+        <div class="mg-info">
+          <div class="mg-name">${g.modelo}</div>
+          <div class="mg-sub">${inStockItems.length} en stock${soldItems.length?' · '+soldItems.length+' vendidos':''}${servItems.length?' · '+servItems.length+' en técnico':''}</div>
+        </div>
+        <div class="mg-right">
+          <div class="mg-cnt ${inStockItems.length>0?'tg':'tr'}">${g.items.length} u.</div>
+          <div class="mg-val">${fm(avgCost)} prom.</div>
+        </div>
+        <span class="mg-arr">›</span>
+      </div>
+      <div class="mg-body">${unitRows}</div>
+    </div>`;
+  }).join('');
+}
+function toggleMg(key){
+  const el=document.getElementById('mg-'+key);
+  if(el)el.classList.toggle('open');
+}
+function delStock(id){
+  if(!confirm('¿Eliminar?'))return;
+  D.stock=D.stock.filter(s=>s.id!==id);save();
+  const cur=document.querySelector('.nb.on');
+  if(cur){const t=cur.getAttribute('onclick')?.match(/'(\w+)'/)?.[1];if(t)go(t);}
+}
+
+// ══════════════════════════════════════════
+// ACCESORIOS
+// ══════════════════════════════════════════
+function rAcc(){
+  const f=D.stockFilterAcc;
+  const all=D.stock.filter(s=>s.modulo==='acc');
+  const fil=f==='todos'?all:all.filter(s=>s.status===f);
+
+  $('acK').innerHTML=`
+    <div class="ki" data-c="teal"><div class="ki-l">En stock</div><div class="ki-v ttl">${all.filter(s=>s.status==='stock').length}</div></div>
+    <div class="ki" data-c="red"><div class="ki-l">Inversión</div><div class="ki-v tr">${fm(all.filter(s=>s.status==='stock').reduce((s,e)=>s+e.costoUsd,0))}</div></div>
+    <div class="ki" data-c="green"><div class="ki-l">Vendidos</div><div class="ki-v tg">${all.filter(s=>s.status==='vendido').length}</div></div>`;
+
+  $('acF').innerHTML=['todos','stock','vendido'].map(e=>`<button class="pill${f===e?' on':''}" onclick="D.stockFilterAcc='${e}';save();rAcc()">${{todos:'Todos',stock:'En stock',vendido:'Vendidos'}[e]}</button>`).join('');
+
+  if(!fil.length){$('acL').innerHTML='<div class="emp"><span class="emp-i">🎧</span><span class="emp-t">Sin accesorios</span></div>';return;}
+
+  // Group by categoria
+  const groups={};
+  fil.forEach(e=>{
+    const key=e.accCat||'Sin categoría';
+    if(!groups[key])groups[key]={cat:key,items:[]};
+    groups[key].items.push(e);
+  });
+
+  $('acL').innerHTML=Object.values(groups).map(g=>{
+    const inS=g.items.filter(i=>i.status==='stock');
+    const unitRows=g.items.map(e=>`<div class="mg-unit">
+      <div class="mu-info">
+        <div class="mu-top">
+          <span style="font-weight:600">${e.modelo}</span>
+          ${e.accMarca?`<span style="font-size:.52rem;color:var(--w4)">${e.accMarca}</span>`:''}
+          <span class="bd ${e.status==='vendido'?'bd-g':'bd-t'}">${e.status==='vendido'?'Vendido':'Stock'}</span>
+        </div>
+        <div class="mu-bot">${e.accCompat?'Compatible: '+e.accCompat:''} ${e.estadoEq?'· '+e.estadoEq:''}</div>
+      </div>
+      <div class="mu-r" style="font-family:var(--mono);font-size:.62rem">
+        <div class="tg">${fm(e.precio||0)}</div>
+        <div style="color:var(--w4);font-size:.5rem">costo ${fm(e.costoUsd)}</div>
+        ${e.status==='stock'?`<button class="btn bre bxs" style="margin-top:.2rem" onclick="event.stopPropagation();delStock(${e.id})">✕</button>`:''}
+      </div>
+    </div>`).join('');
+    const accKey = 'acc_'+g.cat.replace(/[^a-zA-Z0-9]/g,'_');
+    return`<div class="mg" id="mg-${accKey}">
+      <div class="mg-hd" onclick="toggleMg('${accKey}')">
+        <div class="mg-ico">🎧</div>
+        <div class="mg-info">
+          <div class="mg-name">${g.cat}</div>
+          <div class="mg-sub">${inS.length} en stock · ${g.items.length} total</div>
+        </div>
+        <div class="mg-right">
+          <div class="mg-cnt ${inS.length>0?'ttl':'tr'}">${inS.length} u.</div>
+        </div>
+        <span class="mg-arr">›</span>
+      </div>
+      <div class="mg-body">${unitRows}</div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════
+// VENTAS
+// ══════════════════════════════════════════
+function rVt(){
+  const vm=D.ventas.filter(v=>v.fecha?.substring(0,7)===td().substring(0,7));
+  const fac=vm.reduce((s,v)=>s+v.precioUsd,0);
+  const net=vm.reduce((s,v)=>s+v.netoUsd,0);
+  const mar=vm.reduce((s,v)=>s+v.margenUsd,0);
+  $('vtK').innerHTML=`
+    <div class="ki" data-c="green"><div class="ki-l">Facturado</div><div class="ki-v tg">${fm(fac)}</div><div class="ki-s">${vm.length} ventas</div></div>
+    <div class="ki" data-c="blue"><div class="ki-l">Neto</div><div class="ki-v tbl">${fm(net)}</div></div>
+    <div class="ki" data-c="orange"><div class="ki-l">Margen</div><div class="ki-v to">${fm(mar)}</div><div class="ki-s">${fac?pct(mar/fac*100):''}</div></div>`;
+
+  $('tVt').innerHTML=D.ventas.length?[...D.ventas].reverse().map(v=>`<tr>
+    <td class="tm">${fD(v.fecha)}</td>
+    <td style="font-size:.62rem">
+      <strong>${v.modelo}</strong>
+      ${v.items && v.items.length > 1 ? '<div style="font-size:.5rem;color:var(--teal);margin-top:.04rem">'+v.items.map(i=>i.modelo).join(' + ')+'</div>' : ''}
+      ${v.canjeEq?`<div style="font-size:.48rem;color:var(--orange)">🔄 ${v.canjeEq}${v.canjeCash?` · Efvo: ${fm(v.canjeCash)}`:''}</div>`:''}
+    </td>
+    <td><span class="bd bd-0">${modLabel(v.modulo||'iphone')}</span></td>
+    <td><span class="bd bd-b">${v.canal}</span></td>
+    <td style="font-size:.58rem;color:var(--w3)">${v.clienteNom||'—'}<br><span style="font-size:.5rem;color:var(--w5)">${v.vendedor||''}</span></td>
+    <td class="tm tg">${fm(v.ingresoUsd||v.precioUsd)}</td>
+    <td class="tm tbl">${fm(v.margenUsd||0)}</td>
+    <td class="tm ${v.margenPct>=20?'tg':v.margenPct>=10?'to':'tr'}">${pct(v.margenPct)}</td>
+  </tr>`).join(''):'<tr><td colspan="8"><div class="emp"><span class="emp-i">💰</span><span class="emp-t">Sin ventas</span></div></td></tr>';
+}
+
+// ══════════════════════════════════════════
+// VENTA — STATE
+// ══════════════════════════════════════════
+let vtLineItems = [];   // [{stockId, precio}]
+let vtPagoItems = [];   // [{medioN, monto, moneda}]
+let vtTipo = 'direct';  // 'direct' | 'canje'
+
+function vtSetTipo(tipo){
+  vtTipo = tipo;
+  $('vtBtnDirect').className = 'btn ' + (tipo==='direct'?'bb':'bgh');
+  $('vtBtnCanje').className  = 'btn ' + (tipo==='canje' ?'bor':'bgh');
+  $('vtSecCanje').style.display = tipo==='canje' ? '' : 'none';
+  vtU();
+}
+
+// ── Items ──
+function vtAddItem(){
+  vtLineItems.push({stockId:null, precio:0});
+  renderVtItems();
+}
+function vtRemoveItem(idx){
+  vtLineItems.splice(idx,1);
+  renderVtItems();
+  vtU();
+}
+function vtItemSelChange(idx){
+  const sel = document.getElementById('vtItemSel_'+idx);
+  const id  = parseInt(sel.value);
+  vtLineItems[idx].stockId = isNaN(id) ? null : id;
+  const eq = D.stock.find(s => s.id === id);
+  if(eq && eq.precio) vtLineItems[idx].precio = eq.precio;
+  renderVtItems();
+  vtU();
+}
+function vtItemPriceChange(idx){
+  const inp = document.getElementById('vtItemP_'+idx);
+  vtLineItems[idx].precio = parseFloat(inp.value)||0;
+  vtU();
+}
+function renderVtItems(){
+  const allSt = D.stock.filter(s => s.status==='stock');
+  const usedIds = vtLineItems.map(l=>l.stockId).filter(Boolean);
+  const modGroups=[{label:'📱 iPhone',mod:'iphone'},{label:'💻 Dispositivos',mod:'disp'},{label:'🎧 Accesorios',mod:'acc'}];
+  $('vtItems').innerHTML = vtLineItems.length===0
+    ? `<div style="text-align:center;padding:.5rem;font-size:.62rem;color:var(--w5);border:1px dashed var(--brd);border-radius:11px;margin-bottom:.3rem">Tocá ＋ para agregar un ítem</div>`
+    : vtLineItems.map((line,idx)=>{
+        const eq = line.stockId ? D.stock.find(s=>s.id===line.stockId) : null;
+        let optsHtml = '<option value="">— Seleccionar ítem —</option>';
+        modGroups.forEach(g=>{
+          const items = allSt.filter(s=>s.modulo===g.mod&&(!usedIds.includes(s.id)||s.id===line.stockId));
+          if(items.length){
+            optsHtml += `<optgroup label="${g.label}">`;
+            optsHtml += items.map(s=>`<option value="${s.id}" ${s.id===line.stockId?'selected':''}>${s.modelo} ${s.capacidad||''} ${s.color?'· '+s.color:''} — ${fm(s.costoUsd)}</option>`).join('');
+            optsHtml += '</optgroup>';
+          }
+        });
+        const infoHtml = eq ? `<div style="padding:.28rem .5rem;background:var(--glass2);border-radius:8px;font-size:.58rem;color:var(--w3);margin:.15rem 0 .28rem">${modIcon(eq.modulo)} <strong>${eq.modelo}</strong> ${eq.capacidad||''} · Costo: ${fm(eq.costoUsd)}</div>` : '';
+        return `<div style="background:var(--glass2);border:1px solid var(--brd);border-radius:12px;padding:.45rem .55rem;margin-bottom:.28rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.22rem">
+            <span style="font-family:var(--mono);font-size:.42rem;color:var(--w4)">ÍTEM ${idx+1}</span>
+            <button class="btn bre bxs" onclick="vtRemoveItem(${idx})">✕</button>
+          </div>
+          <select id="vtItemSel_${idx}" onchange="vtItemSelChange(${idx})" style="width:100%;padding:.4rem .55rem;background:var(--w6);border:1px solid var(--brd);border-radius:10px;color:var(--w);font-size:.74rem;margin-bottom:.18rem">${optsHtml}</select>
+          ${infoHtml}
+          <div class="f" style="margin-bottom:0"><label>Precio de venta (USD) — solo referencia</label><input id="vtItemP_${idx}" type="number" inputmode="decimal" placeholder="0" value="${line.precio||''}" oninput="vtItemPriceChange(${idx})"/></div>
+        </div>`;
+      }).join('');
+}
+
+// ── Pagos ──
+function vtAddPago(){
+  vtPagoItems.push({medioN: D.medios[0]?.n||'', monto:0, moneda:'USD'});
+  renderVtPagos();
+}
+function vtRemovePago(idx){
+  vtPagoItems.splice(idx,1);
+  renderVtPagos();
+  vtU();
+}
+function vtPagoMedChange(idx){
+  const sel = document.getElementById('vtPagoMed_'+idx);
+  vtPagoItems[idx].medioN = sel.value;
+  vtU();
+}
+function vtPagoMonChange(idx){
+  const sel = document.getElementById('vtPagoMon_'+idx);
+  vtPagoItems[idx].moneda = sel.value;
+  vtU();
+}
+function vtPagoMtoChange(idx){
+  const inp = document.getElementById('vtPagoMto_'+idx);
+  vtPagoItems[idx].monto = parseFloat(inp.value)||0;
+  vtU();
+}
+function renderVtPagos(){
+  $('vtPagos').innerHTML = vtPagoItems.length===0
+    ? `<div style="text-align:center;padding:.5rem;font-size:.62rem;color:var(--w5);border:1px dashed var(--brd);border-radius:11px;margin-bottom:.3rem">Tocá ＋ para agregar un medio de pago</div>`
+    : vtPagoItems.map((p,idx)=>`<div style="background:var(--glass2);border:1px solid var(--brd);border-radius:12px;padding:.45rem .55rem;margin-bottom:.28rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.22rem">
+          <span style="font-family:var(--mono);font-size:.42rem;color:var(--w4)">PAGO ${idx+1}</span>
+          <button class="btn bre bxs" onclick="vtRemovePago(${idx})">✕</button>
+        </div>
+        <div class="fr" style="margin-bottom:0">
+          <div class="f" style="margin-bottom:0"><label>Medio</label>
+            <select id="vtPagoMed_${idx}" onchange="vtPagoMedChange(${idx})" style="background:var(--w6);border:1px solid var(--brd);border-radius:10px;color:var(--w);font-size:.74rem;width:100%;padding:.4rem .5rem">
+              ${D.medios.map(m=>`<option ${m.n===p.medioN?'selected':''}>${m.n}</option>`).join('')}
+            </select>
+          </div>
+          <div class="f" style="margin-bottom:0"><label>Moneda</label>
+            <select id="vtPagoMon_${idx}" onchange="vtPagoMonChange(${idx})" style="background:var(--w6);border:1px solid var(--brd);border-radius:10px;color:var(--w);font-size:.74rem;width:100%;padding:.4rem .5rem">
+              <option ${p.moneda==='USD'?'selected':''}>USD</option>
+              <option ${p.moneda==='ARS'?'selected':''}>ARS</option>
+              <option ${p.moneda==='USDT'?'selected':''}>USDT</option>
+            </select>
+          </div>
+        </div>
+        <div class="f" style="margin-top:.22rem;margin-bottom:0"><label>Monto</label>
+          <input id="vtPagoMto_${idx}" type="number" inputmode="decimal" placeholder="0" value="${p.monto||''}" oninput="vtPagoMtoChange(${idx})" style="background:var(--w6);border:1px solid var(--brd);border-radius:10px;color:var(--w);font-size:.74rem;width:100%;padding:.4rem .55rem"/>
+        </div>
+      </div>`).join('');
+}
+
+// ── Preview ──
+function vtU(){
+  const tc  = parseFloat($('vtTc').value)||tcB||1;
+  const canN = $('vtCan').value;
+  const cc  = canCost(canN);
+
+  // Costo total de los ítems
+  let totalCosto = 0;
+  vtLineItems.forEach(line=>{
+    const eq = line.stockId ? D.stock.find(s=>s.id===line.stockId) : null;
+    totalCosto += eq ? eq.costoUsd : 0;
+  });
+
+  // Lo que entrega el cliente en efectivo/transferencia (medios de pago) — convertido a USD
+  let totalPagosUsd = 0;
+  vtPagoItems.forEach(p=>{
+    const mc = medCost(p.medioN);
+    const bruto = p.moneda==='ARS' ? p.monto/tc : p.monto;
+    const neto  = bruto * (1 - mc/100);
+    totalPagosUsd += neto;
+  });
+
+  // Toma del canje (si aplica)
+  const cjVal = vtTipo==='canje' ? (parseFloat($('vtCjVal').value)||0) : 0;
+
+  // Ingreso total real = pagos netos + valor de toma
+  const ingresoTotal = totalPagosUsd + cjVal;
+  const margen       = ingresoTotal - totalCosto;
+  const precioRef    = vtLineItems.reduce((s,l)=>s+(l.precio||0),0);
+  const margenPct    = ingresoTotal>0 ? margen/ingresoTotal*100 : 0;
+
+  // Canal cost hint
+  $('vtCosts').innerHTML = cc ? `Canal ${canN}: −${cc}% aplicado sobre pagos en efectivo` : '';
+
+  const itemCount = vtLineItems.filter(l=>l.stockId).length;
+  const pagoCount = vtPagoItems.filter(p=>p.monto>0).length;
+
+  $('vtPrev').innerHTML = `
+    <div class="ri"><div class="ri-l">Ítems</div><div class="ri-v">${itemCount}</div></div>
+    <div class="ri"><div class="ri-l">Costo total</div><div class="ri-v tr">${fm(totalCosto)}</div></div>
+    <div class="ri"><div class="ri-l">Pagos recibidos</div><div class="ri-v tg">${fm(totalPagosUsd)}</div></div>
+    ${cjVal ? '<div class="ri"><div class="ri-l">Toma canje</div><div class="ri-v to">'+fm(cjVal)+'</div></div>' : ''}
+    <div class="ri"><div class="ri-l">Ingreso total</div><div class="ri-v tbl">${fm(ingresoTotal)}</div></div>
+    <div class="ri"><div class="ri-l">Margen</div><div class="ri-v ${margenPct>=20?'tg':margenPct>=10?'to':'tr'}">${fm(margen)}</div></div>
+    <div class="ri"><div class="ri-l">Margen %</div><div class="ri-v ${margenPct>=20?'tg':margenPct>=10?'to':'tr'}">${pct(margenPct)}</div></div>
+    ${precioRef ? '<div class="ri"><div class="ri-l">Precio ref.</div><div class="ri-v" style="color:var(--w4)">'+fm(precioRef)+'</div></div>' : ''}`;
+}
+
+function vtCjCh(){
+  const mod = ALL_MODELS.find(c=>c.m===$('vtCjMod').value);
+  $('vtCjCap').innerHTML = mod ? mod.c.map(c=>`<option>${c}</option>`).join('') : '';
+}
+
+// ── Save ──
+function saveVt(){
+  const validItems = vtLineItems.filter(l=>l.stockId);
+  if(!validItems.length) return alert('Agregá al menos un ítem');
+  if(!vtPagoItems.filter(p=>p.monto>0).length && !(vtTipo==='canje' && (parseFloat($('vtCjVal').value)||0)>0))
+    return alert('Agregá al menos un medio de pago o valor de toma');
+
+  const tc     = parseFloat($('vtTc').value)||tcB||1;
+  const canN   = $('vtCan').value;
+  const cc     = canCost(canN);
+  const fecha  = $('vtF').value||td();
+  const vendedor = $('vtVd').value||'—';
+  const clienteNom = $('vtClNom').value.trim();
+  const clienteWa  = $('vtClWa').value.trim();
+  const leadId     = parseInt($('vtLead').value)||null;
+
+  // Canje data
+  const cjMod  = vtTipo==='canje' ? $('vtCjMod').value : '';
+  const cjVal  = vtTipo==='canje' ? (parseFloat($('vtCjVal').value)||0) : 0;
+  const cjRep  = vtTipo==='canje' ? (parseFloat($('vtCjRep').value)||0) : 0;
+  const cjNota = vtTipo==='canje' ? $('vtCjNota').value.trim() : '';
+  const cjEqFull = cjMod ? (cjMod+' '+($('vtCjCap').value||'')).trim() : null;
+
+  // Totals
+  const totalCosto = validItems.reduce((s,l)=>{
+    const eq=D.stock.find(e=>e.id===l.stockId);
+    return s+(eq?eq.costoUsd:0);
+  },0);
+
+  // Pagos — move money into caja
+  let totalPagosUsd = 0;
+  vtPagoItems.forEach(p=>{
+    if(!p.monto) return;
+    const mc   = medCost(p.medioN);
+    const neto = p.monto*(1-mc/100);
+    if(p.moneda==='USD')  { D.cajaUsd  += neto; totalPagosUsd += neto; }
+    else if(p.moneda==='USDT') { D.cajaUsdt += neto; totalPagosUsd += neto; }
+    else { D.cajaArs += p.monto; totalPagosUsd += (p.monto/tc)*(1-mc/100); }
+  });
+
+  const ingresoTotal = totalPagosUsd + cjVal;
+  const margen       = ingresoTotal - totalCosto;
+  const precioRef    = validItems.reduce((s,l)=>s+(l.precio||0),0);
+  const margenPct    = ingresoTotal>0 ? margen/ingresoTotal*100 : 0;
+
+  // Items summary
+  const itemsSummary = validItems.map(l=>{
+    const eq=D.stock.find(e=>e.id===l.stockId);
+    return {stockId:l.stockId, modulo:eq?.modulo||'iphone', modelo:(eq?.modelo+' '+(eq?.capacidad||'')).trim(), costoUsd:eq?.costoUsd||0, precioUsd:l.precio||0};
+  });
+  const primaryMod   = itemsSummary[0]?.modulo||'iphone';
+  const primaryLabel = itemsSummary.length===1 ? itemsSummary[0].modelo : itemsSummary[0].modelo+' +'+  (itemsSummary.length-1)+' más';
+
+  const ventaId = uid();
+  D.ventas.push({
+    id:ventaId, modulo:primaryMod, modelo:primaryLabel,
+    items:itemsSummary, costoUsd:totalCosto,
+    precioUsd:precioRef, ingresoUsd:ingresoTotal,
+    tcVenta:tc, canal:canN, canalCost:cc,
+    pagos:vtPagoItems.filter(p=>p.monto>0).map(p=>({...p})),
+    netoUsd:ingresoTotal, margenUsd:margen, margenPct,
+    vendedor, fecha,
+    canjeEq:cjEqFull, canjeVal:cjVal, canjeTipo:vtTipo,
+    clienteNom, clienteWa, leadId
+  });
+
+  // Mark vendido + historial
+  validItems.forEach(l=>{
+    const eq=D.stock.find(e=>e.id===l.stockId);
+    if(eq){
+      eq.status='vendido';
+      if(!eq.historial) eq.historial=[];
+      eq.historial.push({tipo:'vendido',fecha,precioUsd:l.precio||0,ingresoUsd:ingresoTotal/validItems.length,clienteNom,ventaId});
+    }
+  });
+
+  // Close lead
+  if(leadId){
+    const lead=D.leads.find(l=>l.id===leadId);
+    if(lead){
+      if(!lead.hist) lead.hist=[];
+      lead.hist.push({f:fecha,a:'Venta cerrada — '+primaryLabel+' '+fm(ingresoTotal)});
+      lead.estado='Cerrado ganado';
+      lead.ventaId=ventaId;
+    }
+  }
+
+  // Canje → stock
+  if(cjMod && cjVal>0){
+    D.stock.push({
+      id:uid(), modulo:'iphone',
+      modelo:cjEqFull, capacidad:$('vtCjCap').value, color:'',
+      estadoEq:$('vtCjEst').value, imei:$('vtCjImei').value.trim()||'',
+      costoOrig:cjVal, costoMoneda:'USD', costoTc:tc, costoUsd:cjVal,
+      precio:0, proveedor:'Canje', status:'stock', fecha:td(),
+      servicio: cjRep>0?{desc:cjNota||'Arreglo pendiente (canje)',tech:'',repairCostEst:cjRep,repairCostReal:0,fechaIngreso:td(),done:false,fromCanje:true}:null,
+      canjeNotas:cjNota||null,
+      historial:[{tipo:'canje',fecha:td(),costoUsd:cjVal,moneda:'USD',proveedor:'Canje',estadoEq:$('vtCjEst').value}]
+    });
+  }
+
+  closeMo('moVenta'); save(); rVt(); rD();
+  if($('v-iphone').classList.contains('on')) rStock('iphone');
+  if($('v-disp').classList.contains('on'))   rStock('disp');
+  if($('v-acc').classList.contains('on'))    rAcc();
+  toast('✅ Venta registrada — '+validItems.length+' ítem'+(validItems.length>1?'s':''));
+}
+
+function rG(){
+  const gm=D.gastos.filter(g=>g.fecha?.substring(0,7)===td().substring(0,7));
+  const byMon={ARS:0,USD:0,USDT:0};gm.forEach(g=>byMon[g.moneda]=(byMon[g.moneda]||0)+g.monto);
+  $('gK').innerHTML=`
+    <div class="ki" data-c="red"><div class="ki-l">ARS mes</div><div class="ki-v tr">${fa(byMon.ARS)}</div></div>
+    <div class="ki" data-c="red"><div class="ki-l">USD mes</div><div class="ki-v tr">${fm(byMon.USD)}</div></div>
+    <div class="ki" data-c="red"><div class="ki-l">USDT mes</div><div class="ki-v tr">${fu(byMon.USDT)}</div></div>`;
+  $('tG').innerHTML=D.gastos.length?[...D.gastos].reverse().map((g,i)=>{
+    const idx=D.gastos.length-1-i;
+    return`<tr><td class="tm">${fD(g.fecha)}</td><td style="font-size:.64rem"><strong>${g.concepto}</strong></td><td><span class="bd bd-0">${g.cat}</span></td><td class="tm tr">${fmon(g.monto,g.moneda)}</td><td><span class="bd bd-${g.moneda==='USD'?'g':g.moneda==='USDT'?'t':'o'}">${g.moneda}</span></td><td><button class="btn bre bxs" onclick="D.gastos.splice(${idx},1);save();rG();rD()">✕</button></td></tr>`;
+  }).join(''):'<tr><td colspan="6"><div class="emp"><span class="emp-i">🧾</span><span class="emp-t">Sin gastos</span></div></td></tr>';
+}
+function saveG(){
+  const c=$('gConc').value.trim();const m=parseFloat($('gMonto').value);
+  if(!c||!m)return alert('Completá concepto y monto');
+  const mon=$('gMon').value;
+  if(mon==='ARS')D.cajaArs-=m;
+  else if(mon==='USD')D.cajaUsd-=m;
+  else D.cajaUsdt-=m;
+  D.gastos.push({id:uid(),concepto:c,cat:$('gCat').value,monto:m,moneda:mon,fecha:$('gFecha').value||td()});
+  $('gConc').value='';$('gMonto').value='';
+  closeMo('moGasto');save();rG();rD();toast('✅ Gasto registrado');
+}
+
+// ══════════════════════════════════════════
+// SERVICIO TÉCNICO
+// ══════════════════════════════════════════
+function rServ(){
+  const svItems=D.stock.filter(s=>s.servicio);
+  const pending=svItems.filter(s=>!s.servicio.done);
+  const done=svItems.filter(s=>s.servicio.done);
+  const totalCostEst=pending.reduce((s,e)=>s+(e.servicio.repairCostEst||0),0);
+  const totalCostReal=done.reduce((s,e)=>s+(e.servicio.repairCostReal||0),0);
+
+  $('svK').innerHTML=`
+    <div class="ki" data-c="orange"><div class="ki-l">Pendientes</div><div class="ki-v to">${pending.length}</div></div>
+    <div class="ki" data-c="red"><div class="ki-l">Costo est.</div><div class="ki-v tr">${fm(totalCostEst)}</div></div>
+    <div class="ki" data-c="green"><div class="ki-l">Arreglados</div><div class="ki-v tg">${done.length}</div><div class="ki-s">${fm(totalCostReal)} invertido</div></div>`;
+
+  if(!svItems.length){$('svL').innerHTML='<div class="emp"><span class="emp-i">🔧</span><span class="emp-t">No hay equipos en servicio técnico</span></div>';return;}
+
+  let html='';
+  if(pending.length){
+    html+=`<div class="sec-lbl">🔧 Pendientes (${pending.length})</div>`;
+    html+=pending.map(e=>`<div class="sc fade">
+      <div class="sc-i">🔧</div>
+      <div class="sc-info">
+        <div class="sc-m">${e.modelo} ${e.capacidad||''}</div>
+        <div class="sc-s">${e.servicio.desc||'—'} · ${e.servicio.tech||'Sin taller'} · Ingresó ${fD(e.servicio.fechaIngreso)}</div>
+        ${e.servicio.fromCanje?`<span class="bd bd-o" style="margin-top:.1rem">Canje</span>`:''}
+      </div>
+      <div class="sc-r">
+        <div class="sc-p to">${e.servicio.repairCostEst?fm(e.servicio.repairCostEst):'Est. —'}</div>
+        <div style="display:flex;gap:.2rem;margin-top:.2rem;justify-content:flex-end">
+          <button class="btn bgr bxs" onclick="openServDone(${e.id})">✅ Arreglado</button>
+        </div>
+      </div>
+    </div>`).join('');
+  }
+  if(done.length){
+    html+=`<div class="sec-lbl">✅ Historial (${done.length})</div>`;
+    html+=done.map(e=>`<div class="sc fade">
+      <div class="sc-i">✅</div>
+      <div class="sc-info">
+        <div class="sc-m">${e.modelo} ${e.capacidad||''}</div>
+        <div class="sc-s">${e.servicio.desc||'—'} · ${e.servicio.tech||'—'}</div>
+      </div>
+      <div class="sc-r">
+        <div class="sc-p tg">${fm(e.servicio.repairCostReal||0)}</div>
+        <div class="sc-mg" style="color:var(--w4)">costo real</div>
+      </div>
+    </div>`).join('');
+  }
+  $('svL').innerHTML=html;
+}
+
+function openServModal(stockId){
+  const eq=D.stock.find(s=>s.id===stockId);if(!eq)return;
+  $('svStockId').value=stockId;
+  $('svEqInfo').innerHTML=`${modIcon(eq.modulo)} <strong>${eq.modelo} ${eq.capacidad||''}</strong> · ${eq.estadoEq||''} · Costo: ${fm(eq.costoUsd)}`;
+  $('svDesc').value='';$('svTech').value='';$('svCostEst').value='';$('svFecha').value=td();
+  openMo('moServ');
+}
+function saveServ(){
+  const id=parseInt($('svStockId').value);
+  const eq=D.stock.find(s=>s.id===id);if(!eq)return;
+  eq.servicio={
+    desc:$('svDesc').value.trim()||'Reparación',
+    tech:$('svTech').value.trim(),
+    repairCostEst:parseFloat($('svCostEst').value)||0,
+    repairCostReal:0,
+    fechaIngreso:$('svFecha').value||td(),
+    done:false
+  };
+  if(!eq.historial) eq.historial=[];
+  eq.historial.push({tipo:'tecnico',fecha:$('svFecha').value||td(),desc:eq.servicio.desc,tech:eq.servicio.tech,costEst:eq.servicio.repairCostEst});
+  closeMo('moServ');save();
+  rServ();
+  if($('v-iphone').classList.contains('on'))rStock('iphone');
+  if($('v-disp').classList.contains('on'))rStock('disp');
+  rD();
+  toast('🔧 Enviado a técnico');
+}
+
+function openServDone(stockId){
+  $('svDoneId').value=stockId;
+  const eq=D.stock.find(s=>s.id===stockId);
+  $('svDoneCost').value=eq?.servicio?.repairCostEst||'';
+  openMo('moServDone');
+}
+function confirmServDone(){
+  const id=parseInt($('svDoneId').value);
+  const eq=D.stock.find(s=>s.id===id);if(!eq||!eq.servicio)return;
+  const cost=parseFloat($('svDoneCost').value)||0;
+  eq.servicio.done=true;
+  eq.servicio.repairCostReal=cost;
+  eq.servicio.fechaArreglo=td();
+  eq.costoUsd+=cost;
+  eq.estadoEq=$('svDoneEst').value;
+  D.cajaUsd-=cost;
+  if(!eq.historial) eq.historial=[];
+  eq.historial.push({tipo:'arreglado',fecha:td(),costReal:cost,nuevoEstado:$('svDoneEst').value});
+  closeMo('moServDone');save();
+  rServ();
+  if($('v-iphone').classList.contains('on'))rStock('iphone');
+  if($('v-disp').classList.contains('on'))rStock('disp');
+  rD();
+  toast('✅ Arreglo confirmado — costo sumado al equipo');
+}
+
+// ══════════════════════════════════════════
+// LEADS
+// ══════════════════════════════════════════
+const STG=['Nuevo','Contactado','Negociando','Cotizado','Cerrado ganado','Perdido'];
+function rL(){
+  $('pipe').innerHTML=STG.map(st=>{
+    const ls=D.leads.filter(l=>l.estado===st);
+    return`<div class="pcol"><div class="pcol-h">${st}<span class="pcol-n">${ls.length}</span></div>${ls.map(l=>`<div class="lc" onclick="openLD(${l.id})"><div class="lc-n">${l.nombre}</div><div class="lc-d">${l.interes||'—'}</div><div class="lc-b"><span class="tm" style="color:var(--green);font-size:.56rem">${l.budget?fm(l.budget):''}</span><span style="font-size:.5rem;color:var(--w5)">${fD(l.fecha)}</span></div></div>`).join('')}${!ls.length?'<div style="text-align:center;padding:.3rem;font-size:.6rem;color:var(--w5)">—</div>':''}</div>`;
+  }).join('');
+}
+function saveLd(){
+  const n=$('ldN').value.trim();if(!n)return alert('Ingresá nombre');
+  D.leads.push({id:uid(),nombre:n,tel:$('ldT').value.trim(),interes:$('ldInt').value,budget:parseFloat($('ldB').value)||0,canal:$('ldC').value||'—',notas:$('ldNo').value.trim(),estado:'Nuevo',fecha:td(),hist:[{f:td(),a:'Lead creado'}]});
+  ['ldN','ldT','ldB','ldNo'].forEach(id=>$(id).value='');
+  closeMo('moLead');save();rL();toast('✅ Lead creado');
+}
+function openLD(id){
+  const l=D.leads.find(x=>x.id===id);if(!l)return;
+  $('ldDT').textContent=l.nombre;
+  $('ldDB').innerHTML=`<div class="gc" style="margin-bottom:.4rem"><div style="display:flex;justify-content:space-between;align-items:center"><strong>${l.nombre}</strong><span class="bd bd-b">${l.estado}</span></div><div style="margin-top:.3rem;font-size:.66rem;color:var(--w3)">📱 ${l.interes||'—'} · 💰 ${l.budget?fm(l.budget):'—'}<br>📞 ${l.tel||'—'} · ${l.canal||'—'}</div>${l.notas?`<div style="margin-top:.15rem;font-size:.64rem;color:var(--w4)">${l.notas}</div>`:''}</div>
+  <div class="f"><label>Mover a</label><select id="ldNE">${STG.map(s=>`<option${s===l.estado?' selected':''}>${s}</option>`).join('')}</select></div>
+  <div class="f"><label>Nota</label><input id="ldNN" placeholder="Nota de seguimiento..."/></div>
+  <div style="font-family:var(--mono);font-size:.42rem;color:var(--w4);letter-spacing:.06em;margin:.3rem 0 .15rem">HISTORIAL</div>
+  ${(l.hist||[]).slice().reverse().map(h=>`<div style="padding:.22rem 0;border-bottom:1px solid var(--brd);font-size:.6rem"><span class="tm" style="color:var(--w5)">${fD(h.f)}</span> ${h.a}</div>`).join('')}`;
+  $('ldDF').innerHTML=`<button class="btn bre bxs" onclick="D.leads=D.leads.filter(x=>x.id!==${l.id});closeMo('moLD');save();rL()">Eliminar</button><button class="btn bb" onclick="updLd(${l.id})">Guardar</button>`;
+  openMo('moLD');
+}
+function updLd(id){
+  const l=D.leads.find(x=>x.id===id);if(!l)return;
+  if(!l.hist)l.hist=[];
+  const ne=$('ldNE').value;const nn=$('ldNN').value.trim();
+  if(ne!==l.estado){l.hist.push({f:td(),a:`${l.estado} → ${ne}`});l.estado=ne}
+  if(nn)l.hist.push({f:td(),a:nn});
+  closeMo('moLD');save();rL();toast('✅ Actualizado');
+}
+
+// ══════════════════════════════════════════
+// SIMULADOR
+// ══════════════════════════════════════════
+function rSim(){
+  $('simCan').innerHTML = D.canales.map(c=>`<option>${c.n}</option>`).join('');
+  $('simCjMod').innerHTML = '<option value="">— Modelo —</option>'+ALL_MODELS.map(c=>`<option>${c.m}</option>`).join('');
+  if(tcB) $('simTc').value = tcB;
+  if(!simItems.length) simAddItem();
+  if(!simPagos.length) simPagos=[{medioN:D.medios[0]?.n||'',monto:0,moneda:'USD'}];
+  simSetTipo('direct');
+  renderSimItems();
+  renderSimPagos();
+  simU();
+}
+
+// ── Sim state ──
+let simTipo  = 'direct';
+let simItems = [];  // [{stockId}]
+let simPagos = [];  // [{medioN, monto, moneda}]
+
+function simSetTipo(t){
+  simTipo = t;
+  $('simBtnDirect').className = 'btn '+(t==='direct'?'bb':'bgh');
+  $('simBtnCanje').className  = 'btn '+(t==='canje'?'bor':'bgh');
+  $('simSecCanje').style.display = t==='canje'?'':'none';
+  simU();
+}
+
+// ── Items ──
+function simAddItem(){
+  simItems.push({stockId:null});
+  renderSimItems();
+}
+function simRemoveItem(idx){
+  simItems.splice(idx,1);
+  renderSimItems();
+  simU();
+}
+function simItemSel(idx){
+  const sel = document.getElementById('simItemSel_'+idx);
+  const id  = parseInt(sel.value);
+  simItems[idx].stockId = isNaN(id)?null:id;
+  renderSimItems();
+  simU();
+}
+function renderSimItems(){
+  const allSt = D.stock.filter(s=>s.status==='stock');
+  const usedIds = simItems.map(i=>i.stockId).filter(Boolean);
+  const modGroups=[{label:'📱 iPhone',mod:'iphone'},{label:'💻 Dispositivos',mod:'disp'},{label:'🎧 Accesorios',mod:'acc'}];
+
+  $('simItems').innerHTML = simItems.length===0
+    ? `<div style="text-align:center;padding:.4rem;font-size:.6rem;color:var(--w5);border:1px dashed var(--brd);border-radius:10px;margin-bottom:.25rem">Tocá ＋ para agregar un ítem</div>`
+    : simItems.map((item,idx)=>{
+        const eq = item.stockId ? D.stock.find(s=>s.id===item.stockId) : null;
+        let opts = '<option value="">— Seleccionar —</option>';
+        modGroups.forEach(g=>{
+          const its = allSt.filter(s=>s.modulo===g.mod&&(!usedIds.includes(s.id)||s.id===item.stockId));
+          if(its.length){
+            opts+=`<optgroup label="${g.label}">`;
+            opts+=its.map(s=>`<option value="${s.id}" ${s.id===item.stockId?'selected':''}>${s.modelo} ${s.capacidad||''} ${s.color?'· '+s.color:''} — ${fm(s.costoUsd)}</option>`).join('');
+            opts+='</optgroup>';
+          }
+        });
+        const info = eq ? `<div style="font-size:.56rem;color:var(--w3);margin-top:.15rem">${modIcon(eq.modulo)} ${eq.modelo} ${eq.capacidad||''} · Costo: ${fm(eq.costoUsd)}</div>` : '';
+        return `<div style="background:var(--w6);border:1px solid var(--brd);border-radius:11px;padding:.4rem .5rem;margin-bottom:.25rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.18rem">
+            <span style="font-family:var(--mono);font-size:.42rem;color:var(--w4)">ÍTEM ${idx+1}</span>
+            <button class="btn bre bxs" onclick="simRemoveItem(${idx})">✕</button>
+          </div>
+          <select id="simItemSel_${idx}" onchange="simItemSel(${idx})" style="width:100%;padding:.38rem .5rem;background:var(--w7);border:1px solid var(--brd);border-radius:9px;color:var(--w);font-size:.72rem">${opts}</select>
+          ${info}
+        </div>`;
+      }).join('');
+}
+
+// ── Pagos ──
+function simAddPago(){
+  simPagos.push({medioN:D.medios[0]?.n||'',monto:0,moneda:'USD'});
+  renderSimPagos();
+}
+function simRemovePago(idx){
+  simPagos.splice(idx,1);
+  renderSimPagos();
+  simU();
+}
+function simPagoChange(idx,field,val){
+  simPagos[idx][field] = field==='monto'?(parseFloat(val)||0):val;
+  simU();
+}
+function renderSimPagos(){
+  $('simPagos').innerHTML = simPagos.length===0
+    ? `<div style="text-align:center;padding:.4rem;font-size:.6rem;color:var(--w5)">Tocá ＋ para agregar</div>`
+    : simPagos.map((p,idx)=>`
+      <div style="display:flex;gap:.2rem;align-items:flex-end;margin-bottom:.22rem">
+        <div style="flex:2">
+          ${idx===0?'<div style="font-size:.56rem;color:var(--w3);margin-bottom:.1rem">Medio</div>':''}
+          <select onchange="simPagoChange(${idx},'medioN',this.value)" style="width:100%;padding:.36rem .45rem;background:var(--w6);border:1px solid var(--brd);border-radius:9px;color:var(--w);font-size:.7rem">
+            ${D.medios.map(m=>`<option ${m.n===p.medioN?'selected':''}>${m.n}</option>`).join('')}
+          </select>
+        </div>
+        <div style="width:52px;flex-shrink:0">
+          ${idx===0?'<div style="font-size:.56rem;color:var(--w3);margin-bottom:.1rem">Mon.</div>':''}
+          <select onchange="simPagoChange(${idx},'moneda',this.value)" style="width:100%;padding:.36rem .25rem;background:var(--w6);border:1px solid var(--brd);border-radius:9px;color:var(--w);font-size:.64rem">
+            <option ${p.moneda==='USD'?'selected':''}>USD</option>
+            <option ${p.moneda==='ARS'?'selected':''}>ARS</option>
+            <option ${p.moneda==='USDT'?'selected':''}>USDT</option>
+          </select>
+        </div>
+        <div style="flex:2">
+          ${idx===0?'<div style="font-size:.56rem;color:var(--w3);margin-bottom:.1rem">Monto</div>':''}
+          <input type="number" inputmode="decimal" placeholder="0" value="${p.monto||''}"
+            oninput="simPagoChange(${idx},'monto',this.value)"
+            style="width:100%;padding:.36rem .45rem;background:var(--w6);border:1px solid var(--brd);border-radius:9px;color:var(--w);font-size:.7rem"/>
+        </div>
+        <button class="btn bre bxs" onclick="simRemovePago(${idx})">✕</button>
+      </div>`).join('');
+}
+
+function simCjModChange(){
+  const mod = ALL_MODELS.find(c=>c.m===$('simCjMod').value);
+  $('simCjCap').innerHTML = mod?mod.c.map(c=>`<option>${c}</option>`).join(''):'';
+}
+
+function simU(){
+  const tc   = parseFloat($('simTc').value)||tcB||1;
+  const canN = $('simCan').value;
+  const cc   = canCost(canN);
+
+  // Costo total de ítems
+  let totalCosto = 0;
+  simItems.forEach(item=>{
+    const eq = item.stockId ? D.stock.find(s=>s.id===item.stockId) : null;
+    if(eq) totalCosto += eq.costoUsd;
+  });
+
+  // Pagos netos en USD
+  let totalPagosUsd = 0;
+  simPagos.forEach(p=>{
+    if(!p.monto) return;
+    const mc = medCost(p.medioN);
+    const bruto = p.moneda==='ARS' ? p.monto/tc : p.monto;
+    totalPagosUsd += bruto*(1-mc/100);
+  });
+  const canDed    = totalPagosUsd*cc/100;
+  const pagosNeto = totalPagosUsd - canDed;
+
+  // Canje
+  const cjVal = simTipo==='canje' ? (parseFloat($('simCjVal').value)||0) : 0;
+
+  const ingresoTotal = pagosNeto + cjVal;
+  const margen       = ingresoTotal - totalCosto;
+  const margenPct    = ingresoTotal>0 ? margen/ingresoTotal*100 : 0;
+  const cl           = margenPct>=20?'tg':margenPct>=10?'to':'tr';
+  const itemCount    = simItems.filter(i=>i.stockId).length;
+
+  $('simRes').innerHTML = itemCount===0 && !simPagos.some(p=>p.monto>0) ? '' : `
+    <div class="ri"><div class="ri-l">Ítems</div><div class="ri-v">${itemCount}</div></div>
+    <div class="ri"><div class="ri-l">Costo total</div><div class="ri-v tr">${fm(totalCosto)}</div></div>
+    <div class="ri"><div class="ri-l">Pagos netos</div><div class="ri-v tg">${fm(pagosNeto)}</div></div>
+    ${cjVal?`<div class="ri"><div class="ri-l">Toma canje</div><div class="ri-v to">${fm(cjVal)}</div></div>`:''}
+    <div class="ri"><div class="ri-l">Ingreso total</div><div class="ri-v tbl">${fm(ingresoTotal)}</div></div>
+    <div class="ri"><div class="ri-l">Margen</div><div class="ri-v ${cl}">${fm(margen)}</div></div>
+    <div class="ri"><div class="ri-l">Margen %</div><div class="ri-v ${cl}">${pct(margenPct)}</div></div>
+    ${cc?`<div class="ri" style="grid-column:1/-1"><div style="font-family:var(--mono);font-size:.46rem;color:var(--orange)">Canal ${canN}: −${cc}% = −${fm(canDed)}</div></div>`:''}`;
+
+  const canReg = itemCount>0 && simPagos.some(p=>p.monto>0);
+  const rw = $('simRegWrap');
+  if(rw) rw.style.display = canReg?'':'none';
+}
+
+// ══════════════════════════════════════════
+// VENDEDORES
+// ══════════════════════════════════════════
+function rVd(){
+  $('vL').innerHTML=D.vendedores.length?D.vendedores.map(v=>{
+    const vts=D.ventas.filter(x=>x.vendedor===v.nombre);
+    const fac=vts.reduce((s,x)=>s+x.precioUsd,0);
+    const mar=vts.reduce((s,x)=>s+x.margenUsd,0);
+    const ini=v.nombre.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+    return`<div class="vc"><div class="vc-av">${ini}</div><div class="vc-info"><div class="vc-nm">${v.nombre}</div><div class="vc-st"><span>${vts.length} ventas</span><span class="tg">${fm(fac)}</span><span class="to">${fm(mar)}</span></div></div><button class="btn bre bxs" onclick="D.vendedores=D.vendedores.filter(x=>x.id!==${v.id});save();rVd()">✕</button></div>`;
+  }).join(''):'<div class="emp"><span class="emp-i">👥</span><span class="emp-t">Agregá vendedores</span></div>';
+  const rk=D.vendedores.map(v=>{
+    const vts=D.ventas.filter(x=>x.vendedor===v.nombre&&x.fecha?.substring(0,7)===td().substring(0,7));
+    return{n:v.nombre,v:vts.length,f:vts.reduce((s,x)=>s+x.precioUsd,0),m:vts.reduce((s,x)=>s+x.margenUsd,0)};
+  }).sort((a,b)=>b.f-a.f);
+  $('tRk').innerHTML=rk.length?rk.map((r,i)=>`<tr><td class="tm ${i<3?'to':''}">${['🥇','🥈','🥉'][i]||(i+1)}</td><td style="font-weight:600;font-size:.68rem">${r.n}</td><td class="tm">${r.v}</td><td class="tm tg">${fm(r.f)}</td><td class="tm to">${fm(r.m)}</td></tr>`).join(''):'<tr><td colspan="5"><div class="emp"><span class="emp-t">Sin datos</span></div></td></tr>';
+}
+function saveVd(){const n=$('vdN').value.trim();if(!n)return alert('Nombre');D.vendedores.push({id:uid(),nombre:n});$('vdN').value='';closeMo('moVendedor');save();rVd();toast('✅ Agregado')}
+
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+function rCfg(){
+  $('cfgCan').innerHTML=D.canales.map((c,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.22rem 0;border-bottom:1px solid var(--brd)"><span style="font-size:.72rem">${c.n}</span><div style="display:flex;align-items:center;gap:.3rem"><span class="tm" style="color:var(--orange)">${c.cost?c.cost+'%':''}</span><button class="btn bre bxs" onclick="D.canales.splice(${i},1);save();rCfg()">✕</button></div></div>`).join('');
+  $('cfgMed').innerHTML=D.medios.map((m,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.22rem 0;border-bottom:1px solid var(--brd)"><span style="font-size:.72rem">${m.n}</span><div style="display:flex;align-items:center;gap:.3rem"><span class="tm" style="color:var(--orange)">${m.cost?m.cost+'%':''}</span><button class="btn bre bxs" onclick="D.medios.splice(${i},1);save();rCfg()">✕</button></div></div>`).join('');
+  $('cfgAccCat').innerHTML=D.accCats.map((c,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:.22rem 0;border-bottom:1px solid var(--brd)"><span style="font-size:.72rem">${c}</span><button class="btn bre bxs" onclick="D.accCats.splice(${i},1);save();rCfg()">✕</button></div>`).join('');
+}
+function addCan(){const n=$('newCanN').value.trim();if(!n)return;D.canales.push({n,cost:parseFloat($('newCanC').value)||0});$('newCanN').value='';$('newCanC').value='';save();rCfg()}
+function addMed(){const n=$('newMedN').value.trim();if(!n)return;D.medios.push({n,cost:parseFloat($('newMedC').value)||0});$('newMedN').value='';$('newMedC').value='';save();rCfg()}
+function addAccCat(){const n=$('newAccCatN').value.trim();if(!n)return;D.accCats.push(n);$('newAccCatN').value='';save();rCfg();toast('✅ Categoría agregada')}
+
+// ══════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════
+function openMo(id,param){
+  $(id).classList.add('open');
+  if(id==='moCompra'){
+    const mod=param||'iphone';
+    $('cModulo').value=mod;
+    $('moCompraTitle').textContent=mod==='iphone'?'Ingreso de iPhone':'Ingreso de dispositivo';
+    if(mod==='iphone'){
+      $('cModF').style.display='';$('cDispModF').style.display='none';$('cDispNomF').style.display='none';$('cCapWrap').style.display='';
+      $('cMod').innerHTML=CAT_IPHONE.map(c=>`<option>${c.m}</option>`).join('');
+      cModCh();
+    } else {
+      $('cModF').style.display='none';$('cDispModF').style.display='';$('cDispNomF').style.display='';$('cCapWrap').style.display='none';
+    }
+    if(tcB)$('cTc').value=tcB;
+    ['cImei','cCosto','cTc','cPrecio','cProv'].forEach(i=>$(i).value='');
+  }
+  if(id==='moAccIngreso'){
+    $('acCat').innerHTML=D.accCats.map(c=>`<option>${c}</option>`).join('');
+    ['acNom','acMarca','acCompat','acCosto','acTc','acPrecio'].forEach(i=>$(i).value='');
+    $('acCant').value='1';
+    if(tcB)$('acTc').value=tcB;
+  }
+  if(id==='moVenta'){
+    // Reset state
+    vtLineItems=[]; vtPagoItems=[]; vtTipo='direct';
+    vtSetTipo('direct');
+    renderVtItems();
+    renderVtPagos();
+    vtAddItem();
+    vtAddPago();
+    // Populate selects
+    $('vtCan').innerHTML=D.canales.map(c=>`<option>${c.n}</option>`).join('');
+    $('vtVd').innerHTML='<option value="">—</option>'+D.vendedores.map(v=>`<option>${v.nombre}</option>`).join('');
+    $('vtCjMod').innerHTML='<option value="">— Modelo —</option>'+ALL_MODELS.map(c=>`<option>${c.m}</option>`).join('');
+    const activeLeads=D.leads.filter(l=>l.estado!=='Cerrado ganado'&&l.estado!=='Perdido');
+    $('vtLead').innerHTML='<option value="">— Sin lead —</option>'+activeLeads.map(l=>`<option value="${l.id}">${l.nombre}${l.tel?' · '+l.tel:''}</option>`).join('');
+    $('vtLead').onchange=function(){
+      const l=D.leads.find(x=>x.id==parseInt(this.value));
+      if(l){$('vtClNom').value=l.nombre;$('vtClWa').value=l.tel||'';}
+    };
+    $('vtF').value=td(); if(tcB)$('vtTc').value=tcB;
+    ['vtCjVal','vtCjRep','vtCjNota','vtCjImei','vtClNom','vtClWa'].forEach(i=>{const el=$(i);if(el)el.value='';});
+    vtU();
+  }
+  if(id==='moGasto')$('gFecha').value=td();
+  if(id==='moLead'){
+    const allItems=D.stock.filter(s=>s.status==='stock');
+    $('ldInt').innerHTML=`<option>— Cualquiera —</option>`+[...new Set(allItems.map(s=>s.modelo))].map(m=>`<option>${m}</option>`).join('');
+    $('ldC').innerHTML=D.canales.map(c=>`<option>${c.n}</option>`).join('')
+  }
+}
+function closeMo(id){$(id).classList.remove('open')}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+
+// ══════════════════════════════════════════
+// SAVE COMPRA (iPhone / Dispositivos)
+// ══════════════════════════════════════════
+function cModCh(){
+  const mod=CAT_IPHONE.find(c=>c.m===$('cMod').value);
+  $('cCap').innerHTML=mod?mod.c.map(c=>`<option>${c}</option>`).join(''):'';
+  $('cCol').innerHTML=mod?mod.cl.map(c=>`<option>${c}</option>`).join(''):'';
+}
+function cDispTipoCh(){
+  // For dispositivos, show text input for description
+}
+function saveC(){
+  const modulo=$('cModulo').value;
+  let modelo,capacidad='',color='';
+  if(modulo==='iphone'){
+    modelo=$('cMod').value;if(!modelo)return alert('Seleccioná modelo');
+    capacidad=$('cCap').value;color=$('cCol').value;
+  } else {
+    modelo=($('cDispTipo').value+' · '+$('cDispNom').value.trim()).trim();
+    if(!$('cDispNom').value.trim())return alert('Describí el dispositivo');
+  }
+  const moneda=$('cMoneda').value;
+  const costo=parseFloat($('cCosto').value)||0;
+  const tc=parseFloat($('cTc').value)||tcB||0;
+  const costoUsd=toUsd(costo,moneda,tc);
+  if(moneda==='ARS')D.cajaArs-=costo;
+  else if(moneda==='USD')D.cajaUsd-=costo;
+  else D.cajaUsdt-=costo;
+  const newEqId=uid();
+  D.stock.push({
+    id:newEqId,modulo,modelo,capacidad,color,
+    estadoEq:$('cEst').value,imei:$('cImei').value.trim(),
+    costoOrig:costo,costoMoneda:moneda,costoTc:tc,costoUsd,
+    precio:parseFloat($('cPrecio').value)||0,proveedor:$('cProv').value.trim(),
+    status:'stock',fecha:td(),
+    historial:[{tipo:'ingreso',fecha:td(),costoUsd,moneda,proveedor:$('cProv').value.trim()||'—',estadoEq:$('cEst').value}]
+  });
+  closeMo('moCompra');save();
+  if(modulo==='iphone'){rStock('iphone')}else{rStock('disp');}
+  rD();toast('✅ Equipo ingresado');
+}
+
+// ══════════════════════════════════════════
+// SAVE ACCESORIO
+// ══════════════════════════════════════════
+function saveAcc(){
+  const nom=$('acNom').value.trim();if(!nom)return alert('Ingresá nombre');
+  const moneda=$('acMoneda').value;
+  const costo=parseFloat($('acCosto').value)||0;
+  const tc=parseFloat($('acTc').value)||tcB||0;
+  const costoUsd=toUsd(costo,moneda,tc);
+  const cant=parseInt($('acCant').value)||1;
+  // One stock entry per unit
+  for(let i=0;i<cant;i++){
+    D.stock.push({
+      id:uid(),modulo:'acc',modelo:nom,
+      accCat:$('acCat').value,accMarca:$('acMarca').value.trim(),
+      accCompat:$('acCompat').value.trim(),
+      capacidad:'',color:'',estadoEq:$('acEst').value,imei:'',
+      costoOrig:costo,costoMoneda:moneda,costoTc:tc,costoUsd,
+      precio:parseFloat($('acPrecio').value)||0,
+      proveedor:'',status:'stock',fecha:td()
+    });
+  }
+  if(moneda==='ARS')D.cajaArs-=costo*cant;
+  else if(moneda==='USD')D.cajaUsd-=costo*cant;
+  else D.cajaUsdt-=costo*cant;
+  closeMo('moAccIngreso');save();rAcc();rD();toast(`✅ ${cant} accesorio${cant>1?'s':''} ingresado${cant>1?'s':''}`);
+}
+
+// ══════════════════════════════════════════
+// EXPORT / IMPORT / RESET
+// ══════════════════════════════════════════
+function xport(){const b=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`cef_pro_${td()}.json`;a.click();toast('💾 Exportado')}
+function imp(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=x=>{try{D={...DEF,...JSON.parse(x.target.result)};save();go('dash');toast('📂 Importado')}catch(err){alert('Archivo inválido')}};r.readAsText(f);e.target.value=''}
+function rst(){if(!confirm('⚠️ ¿Borrar TODO el historial?'))return;D=structuredClone(DEF);save();go('dash');toast('🗑️ Reset')}
+
+// ══════════════════════════════════════════
+// DEMO DATA
+// ══════════════════════════════════════════
+function loadDemo(){
+  D = structuredClone(DEF);
+  D.nextId = 200;
+
+  // Vendedores
+  D.vendedores = [
+    {id:1, nombre:'Lucía Torres'},
+    {id:2, nombre:'Matías Gómez'},
+    {id:3, nombre:'Sofía Ríos'},
+  ];
+
+  // TC de referencia para datos demo
+  const TC = 1420;
+
+  // ── iPhones en stock ──
+  D.stock = [
+    {id:10,modulo:'iphone',modelo:'iPhone 15 Pro',capacidad:'256GB',color:'Titanio negro',estadoEq:'Nuevo sellado',imei:'354821093746201',costoOrig:890,costoMoneda:'USD',costoTc:TC,costoUsd:890,precio:1050,proveedor:'Mayorista BA',status:'stock',fecha:'2025-04-01',historial:[{tipo:'ingreso',fecha:'2025-04-01',costoUsd:890,moneda:'USD',proveedor:'Mayorista BA',estadoEq:'Nuevo sellado'}]},
+    {id:11,modulo:'iphone',modelo:'iPhone 15 Pro',capacidad:'128GB',color:'Titanio natural',estadoEq:'Nuevo sellado',imei:'354821093746202',costoOrig:860,costoMoneda:'USD',costoTc:TC,costoUsd:860,precio:1020,proveedor:'Mayorista BA',status:'stock',fecha:'2025-04-02'},
+    {id:12,modulo:'iphone',modelo:'iPhone 15 Pro',capacidad:'512GB',color:'Titanio blanco',estadoEq:'Usado A+',imei:'354821093746203',costoOrig:820,costoMoneda:'USD',costoTc:TC,costoUsd:820,precio:980,proveedor:'Particular',status:'stock',fecha:'2025-04-03'},
+    {id:13,modulo:'iphone',modelo:'iPhone 14 Pro Max',capacidad:'256GB',color:'Negro espacial',estadoEq:'Usado A',imei:'354821093746204',costoOrig:680,costoMoneda:'USD',costoTc:TC,costoUsd:680,precio:820,proveedor:'Canje previo',status:'stock',fecha:'2025-03-28'},
+    {id:14,modulo:'iphone',modelo:'iPhone 14 Pro Max',capacidad:'128GB',color:'Plata',estadoEq:'Nuevo open box',imei:'354821093746205',costoOrig:700,costoMoneda:'USD',costoTc:TC,costoUsd:700,precio:840,proveedor:'Mayorista BA',status:'stock',fecha:'2025-03-29'},
+    {id:15,modulo:'iphone',modelo:'iPhone 16',capacidad:'128GB',color:'Negro',estadoEq:'Nuevo sellado',imei:'354821093746206',costoOrig:780,costoMoneda:'USD',costoTc:TC,costoUsd:780,precio:940,proveedor:'Distribuidora Norte',status:'stock',fecha:'2025-04-05'},
+    {id:16,modulo:'iphone',modelo:'iPhone 16',capacidad:'256GB',color:'Azul ultramar',estadoEq:'Nuevo sellado',imei:'354821093746207',costoOrig:810,costoMoneda:'USD',costoTc:TC,costoUsd:810,precio:970,proveedor:'Distribuidora Norte',status:'stock',fecha:'2025-04-05'},
+    {id:17,modulo:'iphone',modelo:'iPhone 13',capacidad:'128GB',color:'Verde',estadoEq:'Usado B',imei:'354821093746208',costoOrig:400,costoMoneda:'USD',costoTc:TC,costoUsd:400,precio:490,proveedor:'Canje',status:'stock',fecha:'2025-04-08',
+      servicio:{desc:'Pantalla rayada, necesita reemplazo de vidrio',tech:'TechFix Palermo',repairCostEst:35,repairCostReal:0,fechaIngreso:'2025-04-08',done:false,fromCanje:true},canjeNotas:'Pantalla con rayaduras, vidrio partido en esquina',
+      historial:[{tipo:'canje',fecha:'2025-04-08',costoUsd:400,moneda:'USD',proveedor:'Canje',estadoEq:'Usado B'},{tipo:'tecnico',fecha:'2025-04-08',desc:'Pantalla rayada, necesita reemplazo de vidrio',tech:'TechFix Palermo',costEst:35}]},
+    {id:18,modulo:'iphone',modelo:'iPhone 13',capacidad:'256GB',color:'Medianoche',estadoEq:'Usado A',imei:'354821093746209',costoOrig:430,costoMoneda:'USD',costoTc:TC,costoUsd:430,precio:520,proveedor:'Particular',status:'stock',fecha:'2025-04-06'},
+    {id:19,modulo:'iphone',modelo:'iPhone 12',capacidad:'64GB',color:'Negro',estadoEq:'Reacondicionado',imei:'354821093746210',costoOrig:290,costoMoneda:'USD',costoTc:TC,costoUsd:290+45,precio:390,proveedor:'Canje',status:'stock',fecha:'2025-03-20',
+      servicio:{desc:'Batería al 74%, reemplazo necesario',tech:'iRepair Centro',repairCostEst:40,repairCostReal:45,fechaIngreso:'2025-03-21',done:true,fechaArreglo:'2025-03-25',fromCanje:true}},
+
+    // Vendidos
+    {id:20,modulo:'iphone',modelo:'iPhone 15 Pro Max',capacidad:'256GB',color:'Titanio azul',estadoEq:'Nuevo sellado',imei:'354821093746220',costoOrig:960,costoMoneda:'USD',costoTc:TC,costoUsd:960,precio:1150,proveedor:'Mayorista BA',status:'vendido',fecha:'2025-04-01',historial:[{tipo:'ingreso',fecha:'2025-04-01',costoUsd:960,moneda:'USD',proveedor:'Mayorista BA',estadoEq:'Nuevo sellado'},{tipo:'vendido',fecha:'2025-04-02',precioUsd:1150,clienteNom:'Laura Benítez',ventaId:100}]},
+    {id:21,modulo:'iphone',modelo:'iPhone 14',capacidad:'128GB',color:'Morado',estadoEq:'Usado A+',imei:'354821093746221',costoOrig:500,costoMoneda:'USD',costoTc:TC,costoUsd:500,precio:620,proveedor:'Particular',status:'vendido',fecha:'2025-03-25'},
+    {id:22,modulo:'iphone',modelo:'iPhone 13 Pro',capacidad:'256GB',color:'Oro',estadoEq:'Usado A',imei:'354821093746222',costoOrig:560,costoMoneda:'USD',costoTc:TC,costoUsd:560,precio:680,proveedor:'Mayorista BA',status:'vendido',fecha:'2025-04-10'},
+    {id:23,modulo:'iphone',modelo:'iPhone 16 Pro',capacidad:'128GB',color:'Titanio natural',estadoEq:'Nuevo sellado',imei:'354821093746223',costoOrig:990,costoMoneda:'USD',costoTc:TC,costoUsd:990,precio:1180,proveedor:'Distribuidora Norte',status:'vendido',fecha:'2025-04-12'},
+
+    // ── Dispositivos en stock ──
+    {id:50,modulo:'disp',modelo:'Samsung Galaxy · S24 Ultra 256GB',capacidad:'',color:'Titanio gris',estadoEq:'Nuevo sellado',imei:'357120098765401',costoOrig:750,costoMoneda:'USD',costoTc:TC,costoUsd:750,precio:900,proveedor:'Mayorista BA',status:'stock',fecha:'2025-04-04'},
+    {id:51,modulo:'disp',modelo:'iPad · iPad Air M2 256GB',capacidad:'',color:'Azul',estadoEq:'Nuevo sellado',imei:'',costoOrig:640,costoMoneda:'USD',costoTc:TC,costoUsd:640,precio:780,proveedor:'Apple Store',status:'stock',fecha:'2025-04-06'},
+    {id:52,modulo:'disp',modelo:'MacBook · MacBook Air M3 13" 256GB',capacidad:'',color:'Gris espacial',estadoEq:'Nuevo open box',imei:'',costoOrig:1100,costoMoneda:'USD',costoTc:TC,costoUsd:1100,precio:1320,proveedor:'Revendedor certificado',status:'stock',fecha:'2025-04-07'},
+    {id:53,modulo:'disp',modelo:'Apple Watch · Series 9 41mm GPS',capacidad:'',color:'Medianoche',estadoEq:'Nuevo sellado',imei:'',costoOrig:290,costoMoneda:'USD',costoTc:TC,costoUsd:290,precio:360,proveedor:'Mayorista BA',status:'stock',fecha:'2025-04-08'},
+    {id:54,modulo:'disp',modelo:'Samsung Galaxy · A55 128GB',capacidad:'',color:'Violeta',estadoEq:'Usado A+',imei:'357120098765402',costoOrig:280,costoMoneda:'USD',costoTc:TC,costoUsd:280,precio:340,proveedor:'Particular',status:'stock',fecha:'2025-04-09'},
+
+    // ── Accesorios ──
+    {id:70,modulo:'acc',modelo:'Funda MagSafe silicona iPhone 15 Pro',accCat:'Funda',accMarca:'Apple',accCompat:'iPhone 15 Pro',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:28,costoMoneda:'USD',costoTc:TC,costoUsd:28,precio:45,proveedor:'',status:'stock',fecha:'2025-04-01'},
+    {id:71,modulo:'acc',modelo:'Funda MagSafe silicona iPhone 15 Pro',accCat:'Funda',accMarca:'Apple',accCompat:'iPhone 15 Pro',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:28,costoMoneda:'USD',costoTc:TC,costoUsd:28,precio:45,proveedor:'',status:'stock',fecha:'2025-04-01'},
+    {id:72,modulo:'acc',modelo:'Funda transparente iPhone 14 / 14 Pro',accCat:'Funda',accMarca:'Spigen',accCompat:'iPhone 14 / 14 Pro',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:12,costoMoneda:'USD',costoTc:TC,costoUsd:12,precio:22,proveedor:'',status:'stock',fecha:'2025-04-02'},
+    {id:73,modulo:'acc',modelo:'Cable USB-C a Lightning 1m',accCat:'Cable',accMarca:'Apple',accCompat:'Universal iPhone',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:15,costoMoneda:'USD',costoTc:TC,costoUsd:15,precio:28,proveedor:'',status:'stock',fecha:'2025-04-02'},
+    {id:74,modulo:'acc',modelo:'Cable USB-C a Lightning 1m',accCat:'Cable',accMarca:'Apple',accCompat:'Universal iPhone',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:15,costoMoneda:'USD',costoTc:TC,costoUsd:15,precio:28,proveedor:'',status:'stock',fecha:'2025-04-02'},
+    {id:75,modulo:'acc',modelo:'Cable USB-C a USB-C 2m',accCat:'Cable',accMarca:'Belkin',accCompat:'Universal',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:10,costoMoneda:'USD',costoTc:TC,costoUsd:10,precio:18,proveedor:'',status:'stock',fecha:'2025-04-02'},
+    {id:76,modulo:'acc',modelo:'Cargador 20W USB-C',accCat:'Cargador',accMarca:'Apple',accCompat:'iPhone 8 en adelante',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:25,costoMoneda:'USD',costoTc:TC,costoUsd:25,precio:42,proveedor:'',status:'stock',fecha:'2025-04-03'},
+    {id:77,modulo:'acc',modelo:'Cargador 20W USB-C',accCat:'Cargador',accMarca:'Apple',accCompat:'iPhone 8 en adelante',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:25,costoMoneda:'USD',costoTc:TC,costoUsd:25,precio:42,proveedor:'',status:'stock',fecha:'2025-04-03'},
+    {id:78,modulo:'acc',modelo:'Vidrio templado 0.3mm iPhone 16 Pro',accCat:'Vidrio templado',accMarca:'Zagg',accCompat:'iPhone 16 Pro',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:8,costoMoneda:'USD',costoTc:TC,costoUsd:8,precio:16,proveedor:'',status:'stock',fecha:'2025-04-04'},
+    {id:79,modulo:'acc',modelo:'Vidrio templado 0.3mm iPhone 16 Pro',accCat:'Vidrio templado',accMarca:'Zagg',accCompat:'iPhone 16 Pro',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:8,costoMoneda:'USD',costoTc:TC,costoUsd:8,precio:16,proveedor:'',status:'stock',fecha:'2025-04-04'},
+    {id:80,modulo:'acc',modelo:'Vidrio templado 0.3mm iPhone 16 Pro',accCat:'Vidrio templado',accMarca:'Zagg',accCompat:'iPhone 16 Pro',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:8,costoMoneda:'USD',costoTc:TC,costoUsd:8,precio:16,proveedor:'',status:'stock',fecha:'2025-04-04'},
+    {id:81,modulo:'acc',modelo:'AirPods Pro 2da gen USB-C',accCat:'Auriculares',accMarca:'Apple',accCompat:'Universal',capacidad:'',color:'',estadoEq:'Nuevo sellado',imei:'',costoOrig:185,costoMoneda:'USD',costoTc:TC,costoUsd:185,precio:240,proveedor:'',status:'stock',fecha:'2025-04-05'},
+    {id:82,modulo:'acc',modelo:'Soporte MagSafe auto',accCat:'Soporte',accMarca:'Belkin',accCompat:'iPhone 12 en adelante',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:22,costoMoneda:'USD',costoTc:TC,costoUsd:22,precio:38,proveedor:'',status:'stock',fecha:'2025-04-06'},
+    // Vendido
+    {id:83,modulo:'acc',modelo:'Cable USB-C a Lightning 1m',accCat:'Cable',accMarca:'Apple',accCompat:'Universal iPhone',capacidad:'',color:'',estadoEq:'Nuevo',imei:'',costoOrig:15,costoMoneda:'USD',costoTc:TC,costoUsd:15,precio:28,proveedor:'',status:'vendido',fecha:'2025-04-10'},
+  ];
+
+  // ── Ventas ──
+  D.ventas = [
+    // Mes actual
+    {id:100,stockId:20,modulo:'iphone',modelo:'iPhone 15 Pro Max 256GB',costoUsd:960,precioUsd:1150,precioArs:1150*TC,tcVenta:TC,canal:'Instagram',canalCost:0,medio:'Efectivo USD',medioCost:0,costDeductions:0,netoUsd:1150,margenUsd:190,margenPct:16.5,vendedor:'Lucía Torres',fecha:'2025-04-02',canjeEq:null,canjeVal:0,canjeCash:0},
+    {id:101,stockId:21,modulo:'iphone',modelo:'iPhone 14 128GB',costoUsd:500,precioUsd:620,precioArs:620*TC,tcVenta:TC,canal:'WhatsApp',canalCost:0,medio:'Efectivo ARS',medioCost:0,costDeductions:0,netoUsd:620,margenUsd:120,margenPct:19.4,vendedor:'Matías Gómez',fecha:'2025-04-05',canjeEq:'iPhone 12 64GB',canjeVal:290,canjeCash:330},
+    {id:102,stockId:22,modulo:'iphone',modelo:'iPhone 13 Pro 256GB',costoUsd:560,precioUsd:680,precioArs:680*TC,tcVenta:TC,canal:'MercadoLibre',canalCost:13,medio:'MercadoPago',medioCost:4.5,costDeductions:680*0.175,netoUsd:680-680*0.175,margenUsd:(680-680*0.175)-560,margenPct:((680-680*0.175)-560)/680*100,vendedor:'Sofía Ríos',fecha:'2025-04-10',canjeEq:null,canjeVal:0,canjeCash:0},
+    {id:103,stockId:23,modulo:'iphone',modelo:'iPhone 16 Pro 128GB',costoUsd:990,precioUsd:1180,precioArs:1180*TC,tcVenta:TC,canal:'Local',canalCost:0,medio:'USDT',medioCost:0,costDeductions:0,netoUsd:1180,margenUsd:190,margenPct:16.1,vendedor:'Lucía Torres',fecha:'2025-04-12',canjeEq:null,canjeVal:0,canjeCash:0},
+    {id:104,stockId:83,modulo:'acc',modelo:'Cable USB-C a Lightning 1m',costoUsd:15,precioUsd:28,precioArs:28*TC,tcVenta:TC,canal:'Local',canalCost:0,medio:'Efectivo ARS',medioCost:0,costDeductions:0,netoUsd:28,margenUsd:13,margenPct:46.4,vendedor:'Matías Gómez',fecha:'2025-04-10',canjeEq:null,canjeVal:0,canjeCash:0},
+  ];
+
+  // Recalculate netoUsd for ML/MP sale correctly
+  D.ventas[2].netoUsd = Math.round((680 - 680*0.175)*100)/100;
+  D.ventas[2].margenUsd = Math.round((D.ventas[2].netoUsd - 560)*100)/100;
+  D.ventas[2].margenPct = Math.round(D.ventas[2].margenUsd/680*1000)/10;
+
+  // ── Gastos ──
+  D.gastos = [
+    {id:110,concepto:'Alquiler local abril',cat:'Alquiler',monto:350,moneda:'USD',fecha:'2025-04-01'},
+    {id:111,concepto:'Publicidad Instagram — campaña abril',cat:'Publicidad',monto:85,moneda:'USD',fecha:'2025-04-03'},
+    {id:112,concepto:'Sueldo Matías Gómez',cat:'Sueldos',monto:180000,moneda:'ARS',fecha:'2025-04-05'},
+    {id:113,concepto:'Ingresos Brutos marzo',cat:'Impuestos',monto:62000,moneda:'ARS',fecha:'2025-04-07'},
+    {id:114,concepto:'Servicio técnico — batería iPhone 12',cat:'Servicios',monto:45,moneda:'USD',fecha:'2025-03-25'},
+    {id:115,concepto:'Envío Andreani — 3 paquetes',cat:'Logística',monto:8500,moneda:'ARS',fecha:'2025-04-11'},
+  ];
+
+  // ── Leads ──
+  D.leads = [
+    {id:120,nombre:'Franco Martínez',tel:'+5491155443322',interes:'iPhone 16 Pro',budget:1200,canal:'Instagram',notas:'Quiere 256GB titanio negro, tiene para la semana que viene',estado:'Negociando',fecha:'2025-04-08',hist:[{f:'2025-04-08',a:'Lead creado'},{f:'2025-04-09',a:'Contactado → Negociando'},{f:'2025-04-10',a:'Cotizó iPhone 16 Pro 256GB a U$D 1.190'}]},
+    {id:121,nombre:'Valentina Cruz',tel:'+5491166778899',interes:'iPhone 15 Pro',budget:1000,canal:'WhatsApp',notas:'Tiene iPhone 14 para canje, evaluando diferencia',estado:'Cotizado',fecha:'2025-04-07',hist:[{f:'2025-04-07',a:'Lead creado'},{f:'2025-04-08',a:'Nuevo → Contactado'},{f:'2025-04-09',a:'Contactado → Cotizado'}]},
+    {id:122,nombre:'Diego Salas',tel:'+5491144556677',interes:'MacBook Air M3',budget:1350,canal:'Referido',notas:'Lo manda Lucía Torres',estado:'Contactado',fecha:'2025-04-11',hist:[{f:'2025-04-11',a:'Lead creado'}]},
+    {id:123,nombre:'Carolina Ríos',tel:'+5491177889900',interes:'Samsung Galaxy S24 Ultra',budget:900,canal:'Instagram',notas:'',estado:'Nuevo',fecha:'2025-04-13',hist:[{f:'2025-04-13',a:'Lead creado'}]},
+    {id:124,nombre:'Martín Álvarez',tel:'+5491188990011',interes:'iPhone 16',budget:950,canal:'MercadoLibre',notas:'Preguntó por cuotas con tarjeta',estado:'Nuevo',fecha:'2025-04-14',hist:[{f:'2025-04-14',a:'Lead creado'}]},
+    {id:125,nombre:'Laura Benítez',tel:'+5491122334455',interes:'iPhone 14 Pro Max',budget:820,canal:'WhatsApp',notas:'Cerrado! Pagó con transferencia',estado:'Cerrado ganado',fecha:'2025-04-03',hist:[{f:'2025-04-03',a:'Lead creado'},{f:'2025-04-04',a:'Contactado → Negociando'},{f:'2025-04-05',a:'Venta cerrada U$D 820'}]},
+    {id:126,nombre:'Roberto Paz',tel:'+5491133445566',interes:'iPad Air M2',budget:750,canal:'Instagram',notas:'Se fue con la competencia, precio',estado:'Perdido',fecha:'2025-04-02',hist:[{f:'2025-04-02',a:'Lead creado'},{f:'2025-04-06',a:'Perdido — precio'}]},
+  ];
+
+  // ── Caja ──
+  // Simular saldo realista post-operaciones
+  D.cajaUsd = 2840;
+  D.cajaArs = 310000;
+  D.cajaUsdt = 1180;
+
+  // TC de referencia
+  D.tcBlue = TC;
+  D.tcUsdt = 1435;
+
+  D.nextId = 300;
+  save();
+}
+
+
+
+// ══════════════════════════════════════════
+// HISTORIAL DE CAJA
+// ══════════════════════════════════════════
+let cajaFilter = 'todos';
+function rCajaHist(){
+  // Build unified movement list from all sources
+  const movs = [];
+
+  // Compras de stock
+  D.stock.forEach(e=>{
+    if(!e.costoOrig) return;
+    const delta = -e.costoUsd;
+    movs.push({fecha:e.fecha, tipo:'compra', desc:'Compra: '+e.modelo+(e.capacidad?' '+e.capacidad:''), mon:e.costoMoneda||'USD', delta:-e.costoOrig, deltaUsd:delta, icon:'📥'});
+  });
+
+  // Ventas
+  D.ventas.forEach(v=>{
+    if(v.pagos && v.pagos.length){
+      v.pagos.forEach(p=>{
+        movs.push({fecha:v.fecha, tipo:'venta', desc:'Venta: '+v.modelo+(v.clienteNom?' → '+v.clienteNom:''), mon:p.moneda, delta:p.monto, deltaUsd:p.moneda==='ARS'?p.monto/(v.tcVenta||1):p.monto, icon:'💰'});
+      });
+    } else {
+      // Legacy
+      movs.push({fecha:v.fecha, tipo:'venta', desc:'Venta: '+v.modelo, mon:'USD', delta:v.ingresoUsd||v.precioUsd, deltaUsd:v.ingresoUsd||v.precioUsd, icon:'💰'});
+    }
+  });
+
+  // Gastos
+  D.gastos.forEach(g=>{
+    movs.push({fecha:g.fecha, tipo:'gasto', desc:'Gasto: '+g.concepto, mon:g.moneda, delta:-g.monto, deltaUsd:g.moneda==='USD'?-g.monto:g.moneda==='USDT'?-g.monto:-g.monto/(tcB||1), icon:'🧾'});
+  });
+
+  // Arreglos (servicio técnico completados)
+  D.stock.filter(e=>e.servicio&&e.servicio.done&&e.servicio.repairCostReal).forEach(e=>{
+    movs.push({fecha:e.servicio.fechaArreglo||e.fecha, tipo:'servicio', desc:'Técnico: '+e.modelo, mon:'USD', delta:-e.servicio.repairCostReal, deltaUsd:-e.servicio.repairCostReal, icon:'🔧'});
+  });
+
+  // Ajustes
+  (D.ajustesCaja||[]).forEach(a=>{
+    if(a.tipo==='fx'){
+      movs.push({fecha:a.fecha, tipo:'ajuste', desc:(a.motivo||'Cambio')+'  (sale '+fmon(Math.abs(a.mtoOut),a.monOut)+')', mon:a.monIn, delta:a.mtoIn, deltaUsd:0, icon:'🔁'});
+    } else {
+      movs.push({fecha:a.fecha, tipo:'ajuste', desc:a.motivo||'Ajuste', mon:a.mon, delta:a.delta, deltaUsd:a.mon==='USD'?a.delta:0, icon:a.delta>=0?'➕':'➖'});
+    }
+  });
+
+  // Sort newest first
+  movs.sort((a,b)=>b.fecha?.localeCompare(a.fecha||'')||0);
+
+  // KPIs
+  const totalIn  = movs.filter(m=>m.deltaUsd>0).reduce((s,m)=>s+m.deltaUsd,0);
+  const totalOut = movs.filter(m=>m.deltaUsd<0).reduce((s,m)=>s+Math.abs(m.deltaUsd),0);
+  $('cajaK').innerHTML=`
+    <div class="ki" data-c="blue"><div class="ki-l">ARS</div><div class="ki-v ${D.cajaArs>=0?'tg':'tr'}">${fa(D.cajaArs)}</div></div>
+    <div class="ki" data-c="green"><div class="ki-l">USD</div><div class="ki-v ${D.cajaUsd>=0?'tg':'tr'}">${fm(D.cajaUsd)}</div></div>
+    <div class="ki" data-c="teal"><div class="ki-l">USDT</div><div class="ki-v ${D.cajaUsdt>=0?'ttl':'tr'}">${fu(D.cajaUsdt)}</div></div>
+    <div class="ki" data-c="orange"><div class="ki-l">Movimientos</div><div class="ki-v">${movs.length}</div></div>`;
+
+  // Filters
+  const tipos=['todos','venta','compra','gasto','servicio','ajuste'];
+  $('cajaFil').innerHTML=tipos.map(t=>`<button class="pill${cajaFilter===t?' on':''}" onclick="cajaFilter='${t}';rCajaHist()">${{todos:'Todos',venta:'💰 Ventas',compra:'📥 Compras',gasto:'🧾 Gastos',servicio:'🔧 Técnico',ajuste:'± Ajustes'}[t]}</button>`).join('');
+
+  const filtered = cajaFilter==='todos' ? movs : movs.filter(m=>m.tipo===cajaFilter);
+
+  $('cajaList').innerHTML = filtered.length ? filtered.map(m=>`
+    <div class="sc fade" style="margin-bottom:.25rem">
+      <div class="sc-i" style="font-size:.9rem">${m.icon}</div>
+      <div class="sc-info">
+        <div class="sc-m" style="font-size:.7rem">${m.desc}</div>
+        <div class="sc-s">${fD(m.fecha)}</div>
+      </div>
+      <div class="sc-r">
+        <div class="sc-p ${m.delta>=0?'tg':'tr'}" style="font-size:.7rem">${m.delta>=0?'+':''}${fmon(m.delta,m.mon)}</div>
+      </div>
+    </div>`).join('')
+  : '<div class="emp"><span class="emp-i">📒</span><span class="emp-t">Sin movimientos</span></div>';
+}
+
+// ══════════════════════════════════════════
+// SIMULADOR → VENTA
+// ══════════════════════════════════════════
+function simToVenta(){
+  const validSim = simItems.filter(i=>i.stockId);
+  if(!validSim.length) return toast('⚠️ Agregá al menos un ítem');
+
+  openMo('moVenta');
+
+  // Pre-fill all items from simItems
+  vtLineItems = validSim.map(i=>{
+    const eq = D.stock.find(s=>s.id===i.stockId);
+    return {stockId:i.stockId, precio:eq?.precio||0};
+  });
+  renderVtItems();
+
+  // Pre-fill tipo
+  vtSetTipo(simTipo);
+
+  // Pre-fill pagos
+  vtPagoItems = simPagos.filter(p=>p.monto>0).map(p=>({...p}));
+  if(!vtPagoItems.length) vtPagoItems=[{medioN:D.medios[0]?.n||'',monto:0,moneda:'USD'}];
+  renderVtPagos();
+
+  // Pre-fill canal
+  const canSel=$('vtCan');
+  if(canSel){
+    const v=$('simCan').value;
+    Array.from(canSel.options).forEach((o,i)=>{if(o.text===v)canSel.selectedIndex=i;});
+  }
+
+  // TC
+  const tcVal=$('simTc').value;
+  if(tcVal) $('vtTc').value=tcVal;
+
+  // Canje
+  if(simTipo==='canje'){
+    const cjMod=$('simCjMod').value;
+    const cjVal=$('simCjVal').value;
+    if(cjMod){
+      const sel=$('vtCjMod');
+      Array.from(sel.options).forEach((o,i)=>{if(o.text===cjMod)sel.selectedIndex=i;});
+      vtCjCh();
+    }
+    if(cjVal) $('vtCjVal').value=cjVal;
+  }
+
+  vtU();
+  toast('📋 '+validSim.length+' ítem'+(validSim.length>1?'s':'')+' pre-cargados en venta');
+}
+
+// ══════════════════════════════════════════
+// HISTORIAL DEL EQUIPO
+// ══════════════════════════════════════════
+function openHistorial(stockId){
+  const eq = D.stock.find(s => s.id === stockId);
+  if(!eq) return;
+  $('moHistT').textContent = eq.modelo + (eq.capacidad ? ' ' + eq.capacidad : '');
+
+  const hist = eq.historial || [];
+  // Build timeline — infer events if historial is empty (legacy items)
+  const events = hist.length > 0 ? hist : [{tipo:'ingreso', fecha: eq.fecha, costoUsd: eq.costoUsd, proveedor: eq.proveedor||'—', estadoEq: eq.estadoEq}];
+
+  // Also add servicio from eq.servicio if not already in hist
+  if(eq.servicio && !hist.find(h => h.tipo === 'tecnico')){
+    events.push({tipo: eq.servicio.done ? 'arreglado' : 'tecnico', fecha: eq.servicio.fechaIngreso, desc: eq.servicio.desc, tech: eq.servicio.tech, costEst: eq.servicio.repairCostEst, costReal: eq.servicio.repairCostReal});
+  }
+  if(eq.status === 'vendido'){
+    const venta = D.ventas.find(v => v.items && v.items.find(i => i.stockId === stockId));
+    if(venta && !hist.find(h => h.tipo === 'vendido')){
+      events.push({tipo:'vendido', fecha: venta.fecha, precioUsd: venta.items.find(i=>i.stockId===stockId)?.precioUsd || venta.precioUsd, clienteNom: venta.clienteNom, ventaId: venta.id});
+    }
+  }
+
+  const icons = {ingreso:'📥', tecnico:'🔧', arreglado:'✅', vendido:'💰', canje:'🔄'};
+  const labels = {ingreso:'Ingresado', tecnico:'Enviado a técnico', arreglado:'Arreglo completado', vendido:'Vendido', canje:'Ingresado por canje'};
+
+  const timelineHtml = events.map(ev => {
+    let detail = '';
+    if(ev.tipo==='ingreso'||ev.tipo==='canje') detail = `Costo: ${fm(ev.costoUsd)} · ${ev.proveedor||''} · ${ev.estadoEq||''}`;
+    if(ev.tipo==='tecnico') detail = `${ev.desc||''} · ${ev.tech||'Sin taller'} · Est: ${fm(ev.costEst||0)}`;
+    if(ev.tipo==='arreglado') detail = `Costo real: ${fm(ev.costReal||0)} · Nuevo estado: ${ev.nuevoEstado||''}`;
+    if(ev.tipo==='vendido') detail = `${fm(ev.precioUsd||0)}${ev.clienteNom?' · '+ev.clienteNom:''}`;
+    return `<div style="display:flex;gap:.6rem;align-items:flex-start;padding:.45rem 0;border-bottom:1px solid var(--brd)">
+      <div style="width:28px;height:28px;border-radius:8px;background:var(--glass2);border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0">${icons[ev.tipo]||'·'}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:.72rem">${labels[ev.tipo]||ev.tipo}</div>
+        <div style="font-size:.58rem;color:var(--w3);margin-top:.04rem">${detail}</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:.52rem;color:var(--w4);flex-shrink:0">${fD(ev.fecha)}</div>
+    </div>`;
+  }).join('');
+
+  $('moHistB').innerHTML = `
+    <div style="padding:.3rem .5rem;background:var(--glass2);border-radius:10px;margin-bottom:.5rem;font-size:.64rem">
+      ${modIcon(eq.modulo)} <strong>${eq.modelo}</strong> ${eq.capacidad||''} ${eq.color||''}<br>
+      <span style="color:var(--w3)">${eq.estadoEq||''} · ${eq.imei?'IMEI: '+eq.imei:''}</span>
+    </div>
+    <div style="font-family:var(--mono);font-size:.42rem;color:var(--w4);letter-spacing:.06em;margin-bottom:.2rem">TIMELINE</div>
+    ${timelineHtml}`;
+
+  const ftBtns = eq.status === 'stock'
+    ? `<button class="btn bor bxs" onclick="closeMo('moHistorial');openServModal(${eq.id})">🔧 Técnico</button>`
+    : '';
+  $('moHistF').innerHTML = ftBtns + `<button class="btn bgh" onclick="closeMo('moHistorial')">Cerrar</button>`;
+  openMo('moHistorial');
+}
+
+// ══════════════════════════════════════════
+// AJUSTE MANUAL DE CAJA
+// ══════════════════════════════════════════
+let ajTipoActual = 'in';
+function ajSetTipo(t){
+  ajTipoActual=t;
+  ['in','out','fx'].forEach(x=>{
+    const btn=$('ajBtn'+x.charAt(0).toUpperCase()+x.slice(1));
+    if(btn) btn.className='btn '+(x==='in'?'bgr':x==='out'?'bre':'bpu')+(t===x?'':' bgh').replace(t===x?'bgh':'','');
+  });
+  // Simpler: just highlight active
+  $('ajBtnIn').className ='btn '+(t==='in' ?'bgr':'bgh')+' '+(t==='in'?'':'');
+  $('ajBtnOut').className='btn '+(t==='out'?'bre':'bgh');
+  $('ajBtnFx').className ='btn '+(t==='fx' ?'bpu':'bgh');
+  $('ajSecSimple').style.display = t==='fx'?'none':'';
+  $('ajSecFx').style.display     = t==='fx'?'':'none';
+  // Update label hint
+  if($('ajMon')) $('ajMon').closest&&null;
+}
+function saveAjuste(){
+  const motivo=$('ajMotivo').value.trim();
+  if(!D.ajustesCaja) D.ajustesCaja=[];
+  if(ajTipoActual==='fx'){
+    const monOut=$('ajFxMonOut').value, mtoOut=parseFloat($('ajFxMtoOut').value)||0;
+    const monIn=$('ajFxMonIn').value,   mtoIn=parseFloat($('ajFxMtoIn').value)||0;
+    if(!mtoOut||!mtoIn) return alert('Completá ambos montos');
+    // Sale
+    if(monOut==='USD') D.cajaUsd-=mtoOut; else if(monOut==='ARS') D.cajaArs-=mtoOut; else D.cajaUsdt-=mtoOut;
+    // Entra
+    if(monIn==='USD')  D.cajaUsd+=mtoIn;  else if(monIn==='ARS')  D.cajaArs+=mtoIn;  else D.cajaUsdt+=mtoIn;
+    D.ajustesCaja.push({id:uid(),fecha:td(),tipo:'fx',monOut,mtoOut:-mtoOut,monIn,mtoIn,motivo:motivo||'Cambio de moneda'});
+    closeMo('moAjuste'); save(); rD();
+    toast('🔁 Cambio registrado — '+fmon(mtoOut,monOut)+' → '+fmon(mtoIn,monIn));
+  } else {
+    const mon=$('ajMon').value;
+    const monto=parseFloat($('ajMonto').value)||0;
+    if(!monto) return alert('Ingresá un monto');
+    const delta=ajTipoActual==='in'?monto:-monto;
+    if(mon==='USD') D.cajaUsd+=delta; else if(mon==='ARS') D.cajaArs+=delta; else D.cajaUsdt+=delta;
+    D.ajustesCaja.push({id:uid(),fecha:td(),tipo:ajTipoActual,mon,delta,motivo:motivo||(ajTipoActual==='in'?'Ingreso manual':'Egreso manual')});
+    ['ajMonto','ajMotivo'].forEach(i=>$(i).value='');
+    closeMo('moAjuste'); save(); rD();
+    toast((delta>=0?'➕':'➖')+' Ajuste — '+fmon(Math.abs(delta),mon));
+  }
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+const loaded = load();
+if(!loaded || !D.stock || D.stock.length === 0){
+  loadDemo();
+}
+fetchTC();setInterval(fetchTC,120000);rD();
+</script>
+
+<!-- Historial del equipo -->
+
+<div class="mo-bg" id="moHistorial"><div class="mo"><div class="mo-bar"></div>
+<div class="mo-hd"><span class="mo-t" id="moHistT">Historial</span><button class="mo-x" onclick="closeMo('moHistorial')">✕</button></div>
+<div class="mo-bd" id="moHistB"></div>
+<div class="mo-ft" id="moHistF"></div>
+</div></div>
+
+<!-- Ajuste manual de caja -->
+
+<div class="mo-bg" id="moAjuste"><div class="mo" style="max-height:80vh"><div class="mo-bar"></div>
+<div class="mo-hd"><span class="mo-t">Ajuste de caja</span><button class="mo-x" onclick="closeMo('moAjuste')">✕</button></div>
+<div class="mo-bd">
+  <div style="font-family:var(--mono);font-size:.44rem;color:var(--w4);letter-spacing:.08em;margin-bottom:.3rem">TIPO DE MOVIMIENTO</div>
+  <div style="display:flex;gap:.25rem;margin-bottom:.5rem">
+    <button id="ajBtnIn"  class="btn bgr"  style="flex:1;font-size:.65rem" onclick="ajSetTipo('in')">➕ Ingreso</button>
+    <button id="ajBtnOut" class="btn bgh"  style="flex:1;font-size:.65rem" onclick="ajSetTipo('out')">➖ Egreso</button>
+    <button id="ajBtnFx"  class="btn bgh"  style="flex:1;font-size:.65rem" onclick="ajSetTipo('fx')">🔁 Cambio</button>
+  </div>
+  <!-- Ingreso / Egreso -->
+  <div id="ajSecSimple">
+    <div class="fr">
+      <div class="f"><label>Moneda</label><select id="ajMon"><option>USD</option><option>ARS</option><option>USDT</option></select></div>
+      <div class="f"><label>Monto</label><input id="ajMonto" type="number" inputmode="decimal" placeholder="0"/></div>
+    </div>
+  </div>
+  <!-- Cambio de moneda -->
+  <div id="ajSecFx" style="display:none">
+    <div style="font-size:.62rem;color:var(--w3);margin-bottom:.3rem">Sale de una moneda, entra en otra</div>
+    <div class="fr">
+      <div class="f"><label>Moneda que SALE</label><select id="ajFxMonOut"><option>USD</option><option>ARS</option><option>USDT</option></select></div>
+      <div class="f"><label>Monto que SALE</label><input id="ajFxMtoOut" type="number" inputmode="decimal" placeholder="0"/></div>
+    </div>
+    <div class="fr">
+      <div class="f"><label>Moneda que ENTRA</label><select id="ajFxMonIn"><option>ARS</option><option>USD</option><option>USDT</option></select></div>
+      <div class="f"><label>Monto que ENTRA</label><input id="ajFxMtoIn" type="number" inputmode="decimal" placeholder="0"/></div>
+    </div>
+  </div>
+  <div class="f"><label>Motivo</label><input id="ajMotivo" placeholder="Ej: Retiro efectivo, cambio de moneda..."/></div>
+</div>
+<div class="mo-ft"><button class="btn bgh" onclick="closeMo('moAjuste')">Cancelar</button><button class="btn bb" onclick="saveAjuste()">Confirmar</button></div>
+</div></div>
+</body>
+</html>
