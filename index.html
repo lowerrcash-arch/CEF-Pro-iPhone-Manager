@@ -269,7 +269,7 @@ select option{background:#1C1C1E;color:#F5F5F7}
 <!-- IPHONE -->
 
 <div class="v" id="v-iphone">
-  <div class="sh"><span class="sh-t">iPhone</span><div style="display:flex;gap:.3rem"><button class="btn bb" onclick="openMo('moCompra','iphone')">+ Ingreso</button></div></div>
+  <div class="sh"><span class="sh-t">iPhone</span><div style="display:flex;gap:.3rem"><button class="btn bb" onclick="openMo('moCompra','iphone')">+ Ingreso</button><button class="btn bpu" onclick="openMo('moMayorista','iphone')">📦 Mayorista</button></div></div>
   <div class="ks" id="ipK"></div>
   <div class="pills" id="ipF"></div>
   <div id="ipL"></div>
@@ -278,7 +278,7 @@ select option{background:#1C1C1E;color:#F5F5F7}
 <!-- DISPOSITIVOS -->
 
 <div class="v" id="v-disp">
-  <div class="sh"><span class="sh-t">Dispositivos</span><button class="btn bb" onclick="openMo('moCompra','disp')">+ Ingreso</button></div>
+  <div class="sh"><span class="sh-t">Dispositivos</span><div style="display:flex;gap:.3rem"><button class="btn bb" onclick="openMo('moCompra','disp')">+ Ingreso</button><button class="btn bpu" onclick="openMo('moMayorista','disp')">📦 Mayorista</button></div></div>
   <div class="ks" id="dpK"></div>
   <div class="pills" id="dpF"></div>
   <div id="dpL"></div>
@@ -287,7 +287,7 @@ select option{background:#1C1C1E;color:#F5F5F7}
 <!-- ACCESORIOS -->
 
 <div class="v" id="v-acc">
-  <div class="sh"><span class="sh-t">Accesorios</span><button class="btn bb" onclick="openMo('moAccIngreso')">+ Ingreso</button></div>
+  <div class="sh"><span class="sh-t">Accesorios</span><div style="display:flex;gap:.3rem"><button class="btn bb" onclick="openMo('moAccIngreso')">+ Ingreso</button><button class="btn bpu" onclick="openMo('moMayorista','acc')">📦 Mayorista</button></div></div>
   <div class="ks" id="acK"></div>
   <div class="pills" id="acF"></div>
   <div id="acL"></div>
@@ -1653,6 +1653,17 @@ function openMo(id,param){
     if(tcB)$('cTc').value=tcB;
     ['cImei','cCosto','cTc','cPrecio','cProv'].forEach(i=>$(i).value='');
   }
+  if(id==='moMayorista'){
+    const mod = param||'iphone';
+    $('mayModulo').value = mod;
+    $('moMayoristaTitle').textContent = mod==='iphone'?'Compra mayorista — iPhone':mod==='acc'?'Compra mayorista — Accesorios':'Compra mayorista — Dispositivos';
+    if(tcB) $('mayTc').value = tcB;
+    $('mayProv').value = '';
+    $('mayPrev').style.display = 'none';
+    // Reset lines and add one empty
+    mayLineas = [];
+    mayAddLinea();
+  }
   if(id==='moAccIngreso'){
     $('acCat').innerHTML=D.accCats.map(c=>`<option>${c}</option>`).join('');
     ['acNom','acMarca','acCompat','acCosto','acTc','acPrecio'].forEach(i=>$(i).value='');
@@ -1767,6 +1778,172 @@ function saveAcc(){
 function xport(){const b=new Blob([JSON.stringify(D,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`cef_pro_${td()}.json`;a.click();toast('💾 Exportado')}
 function imp(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=x=>{try{D={...DEF,...JSON.parse(x.target.result)};save();go('dash');toast('📂 Importado')}catch(err){alert('Archivo inválido')}};r.readAsText(f);e.target.value=''}
 function rst(){if(!confirm('⚠️ ¿Borrar TODO el historial?'))return;D=structuredClone(DEF);save();go('dash');toast('🗑️ Reset')}
+
+
+// ══════════════════════════════════════════
+// COMPRA MAYORISTA — MULTI-ÍTEM
+// ══════════════════════════════════════════
+let mayLineas = []; // [{modelo, capacidad, color, cant, costo, est, bat, precio, desc}]
+
+function mayAddLinea(){
+  const mod = $('mayModulo').value;
+  mayLineas.push({mod, modelo:'', capacidad:'', color:'', cant:1, costo:0, est:'Nuevo sellado', bat:'', precio:0, desc:''});
+  renderMayLineas();
+}
+function mayRemoveLinea(idx){
+  mayLineas.splice(idx,1);
+  renderMayLineas();
+  mayPreview();
+}
+function mayLineaChange(idx, field, val){
+  mayLineas[idx][field] = (field==='cant'||field==='costo'||field==='precio') ? (parseFloat(val)||0) : val;
+  if(field==='modelo') mayLineaModeloCh(idx);
+  mayPreview();
+}
+function mayLineaModeloCh(idx){
+  const modObj = CAT_IPHONE.find(c=>c.m===mayLineas[idx].modelo);
+  if(modObj){
+    mayLineas[idx].capacidad = modObj.c[0]||'';
+    mayLineas[idx].color = modObj.cl[0]||'';
+  }
+  renderMayLineas();
+}
+
+function renderMayLineas(){
+  const mod = $('mayModulo').value;
+  const isIphone = mod==='iphone';
+
+  $('mayLineas').innerHTML = mayLineas.length===0
+    ? `<div style="text-align:center;padding:.5rem;font-size:.6rem;color:#636366;border:1px dashed rgba(84,84,88,.35);border-radius:10px;margin-bottom:.3rem">Tocá ＋ para agregar un modelo al lote</div>`
+    : mayLineas.map((l,idx)=>{
+        const modObj = isIphone ? CAT_IPHONE.find(c=>c.m===l.modelo) : null;
+        const capOpts = modObj ? modObj.c.map(c=>`<option ${c===l.capacidad?'selected':''}>${c}</option>`).join('') : '';
+        const colOpts = modObj ? modObj.cl.map(c=>`<option ${c===l.color?'selected':''}>${c}</option>`).join('') : '';
+
+        return `<div style="background:#2C2C2E;border:1px solid rgba(84,84,88,.35);border-radius:12px;padding:.45rem .55rem;margin-bottom:.3rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:.42rem;color:#636366">LÍNEA ${idx+1}</span>
+            <button class="btn bre bxs" onclick="mayRemoveLinea(${idx})">✕</button>
+          </div>
+          ${isIphone ? `
+          <div class="f" style="margin-bottom:.28rem"><label>Modelo</label>
+            <select onchange="mayLineaChange(${idx},'modelo',this.value)" style="width:100%;padding:.38rem .5rem;background:#1C1C1E;border:1px solid rgba(84,84,88,.35);border-radius:9px;color:#F5F5F7;font-size:.72rem">
+              <option value="">— Seleccionar —</option>
+              ${CAT_IPHONE.map(c=>`<option ${c.m===l.modelo?'selected':''}>${c.m}</option>`).join('')}
+            </select>
+          </div>
+          ${l.modelo ? `<div class="fr" style="margin-bottom:.28rem">
+            <div class="f" style="margin-bottom:0"><label>Capacidad</label>
+              <select onchange="mayLineaChange(${idx},'capacidad',this.value)" style="width:100%;padding:.36rem .45rem;background:#1C1C1E;border:1px solid rgba(84,84,88,.35);border-radius:9px;color:#F5F5F7;font-size:.7rem">
+                ${capOpts}
+              </select>
+            </div>
+            <div class="f" style="margin-bottom:0"><label>Color</label>
+              <select onchange="mayLineaChange(${idx},'color',this.value)" style="width:100%;padding:.36rem .45rem;background:#1C1C1E;border:1px solid rgba(84,84,88,.35);border-radius:9px;color:#F5F5F7;font-size:.7rem">
+                ${colOpts}
+              </select>
+            </div>
+          </div>` : ''}
+          ` : `
+          <div class="f" style="margin-bottom:.28rem"><label>Descripción</label>
+            <input placeholder="Ej: Samsung Galaxy S24 128GB" value="${l.desc||''}" oninput="mayLineaChange(${idx},'desc',this.value)"
+              style="width:100%;padding:.38rem .5rem;background:#1C1C1E;border:1px solid rgba(84,84,88,.35);border-radius:9px;color:#F5F5F7;font-size:.72rem"/>
+          </div>`}
+          <div class="fr" style="margin-bottom:.28rem">
+            <div class="f" style="margin-bottom:0"><label>Estado</label>
+              <select onchange="mayLineaChange(${idx},'est',this.value)" style="width:100%;padding:.36rem .4rem;background:#1C1C1E;border:1px solid rgba(84,84,88,.35);border-radius:9px;color:#F5F5F7;font-size:.68rem">
+                ${['Nuevo sellado','Nuevo open box','Usado A+','Usado A','Usado B','Reacondicionado'].map(e=>`<option ${e===l.est?'selected':''}>${e}</option>`).join('')}
+              </select>
+            </div>
+            <div class="f" style="margin-bottom:0"><label>Batería % (opcional)</label>
+              <input type="number" inputmode="numeric" placeholder="85" value="${l.bat||''}" min="1" max="100"
+                oninput="mayLineaChange(${idx},'bat',this.value)"
+                style="width:100%;padding:.36rem .45rem;background:#1C1C1E;border:1px solid rgba(84,84,88,.35);border-radius:9px;color:#F5F5F7;font-size:.72rem"/>
+            </div>
+          </div>
+          <div class="fr" style="margin-bottom:0">
+            <div class="f" style="margin-bottom:0"><label>Cantidad</label>
+              <input type="number" inputmode="numeric" value="${l.cant||1}" min="1"
+                oninput="mayLineaChange(${idx},'cant',this.value)"
+                style="width:100%;padding:.36rem .45rem;background:#1C1C1E;border:1px solid rgba(84,84,88,.35);border-radius:9px;color:#F5F5F7;font-size:.72rem"/>
+            </div>
+            <div class="f" style="margin-bottom:0"><label>Costo unit.</label>
+              <input type="number" inputmode="decimal" placeholder="0" value="${l.costo||''}"
+                oninput="mayLineaChange(${idx},'costo',this.value)"
+                style="width:100%;padding:.36rem .45rem;background:#1C1C1E;border:1px solid rgba(84,84,88,.35);border-radius:9px;color:#F5F5F7;font-size:.72rem"/>
+            </div>
+            <div class="f" style="margin-bottom:0"><label>Precio venta</label>
+              <input type="number" inputmode="decimal" placeholder="0" value="${l.precio||''}"
+                oninput="mayLineaChange(${idx},'precio',this.value)"
+                style="width:100%;padding:.36rem .45rem;background:#1C1C1E;border:1px solid rgba(84,84,88,.35);border-radius:9px;color:#F5F5F7;font-size:.72rem"/>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+}
+
+function mayPreview(){
+  const moneda = $('mayMoneda').value;
+  const tc = parseFloat($('mayTc').value)||tcB||1;
+  let totalUnits = 0, totalUsd = 0;
+  mayLineas.forEach(l=>{
+    const costoUsd = moneda==='ARS' ? l.costo/tc : l.costo;
+    totalUnits += l.cant||1;
+    totalUsd += costoUsd * (l.cant||1);
+  });
+  if(!totalUnits || !totalUsd){ $('mayPrev').style.display='none'; return; }
+  $('mayPrev').style.display='';
+  $('mayPrev').innerHTML = `${mayLineas.length} modelo${mayLineas.length>1?'s':''} · <strong style="color:#F5F5F7">${totalUnits} unidades</strong> · Total: <strong style="color:#FF453A">U$D ${Math.round(totalUsd).toLocaleString('es-AR')}</strong>`;
+}
+
+function saveMayorista(){
+  const modulo = $('mayModulo').value;
+  const moneda = $('mayMoneda').value;
+  const tc = parseFloat($('mayTc').value)||tcB||1;
+  const prov = $('mayProv').value.trim()||'Mayorista';
+  const hoy = td();
+
+  if(!mayLineas.length) return alert('Agregá al menos un modelo al lote');
+
+  const isIphone = modulo==='iphone';
+  let totalCostoOrig = 0;
+
+  for(const l of mayLineas){
+    const nombre = isIphone ? l.modelo : l.desc;
+    if(!nombre) return alert('Completá el modelo/descripción en todas las líneas');
+    if(!l.costo) return alert('Completá el costo en todas las líneas');
+    const cant = l.cant||1;
+    const costoUsd = moneda==='ARS' ? l.costo/tc : l.costo;
+    const estadoFinal = l.bat ? l.est+` (bat. ${l.bat}%)` : l.est;
+    totalCostoOrig += l.costo * cant;
+
+    for(let i=0; i<cant; i++){
+      D.stock.push({
+        id:uid(), modulo,
+        modelo: isIphone ? l.modelo : nombre,
+        capacidad: isIphone ? l.capacidad : '',
+        color: isIphone ? l.color : '',
+        estadoEq: estadoFinal, imei:'',
+        costoOrig:l.costo, costoMoneda:moneda, costoTc:tc, costoUsd,
+        precio:l.precio||0, proveedor:prov, status:'stock', fecha:hoy,
+        historial:[{tipo:'ingreso',fecha:hoy,costoUsd,moneda,proveedor:prov,estadoEq:estadoFinal}]
+      });
+    }
+  }
+
+  // Deduct from caja
+  if(moneda==='USD') D.cajaUsd -= totalCostoOrig;
+  else if(moneda==='ARS') D.cajaArs -= totalCostoOrig;
+  else D.cajaUsdt -= totalCostoOrig;
+
+  const totalUnits = mayLineas.reduce((s,l)=>s+(l.cant||1),0);
+  closeMo('moMayorista'); save();
+  if(modulo==='iphone') rStock('iphone');
+  else if(modulo==='disp') rStock('disp');
+  else rAcc();
+  rD();
+  toast(`📦 ${totalUnits} equipo${totalUnits>1?'s':''} ingresado${totalUnits>1?'s':''} (${mayLineas.length} modelo${mayLineas.length>1?'s':''})`);
+}
 
 // ══════════════════════════════════════════
 // DEMO DATA
@@ -2168,5 +2345,36 @@ fetchTC();setInterval(fetchTC,120000);rD();
 </div>
 <div class="mo-ft"><button class="btn bgh" onclick="closeMo('moAjuste')">Cancelar</button><button class="btn bb" onclick="saveAjuste()">Confirmar</button></div>
 </div></div>
-</body>
-</html>
+
+<!-- Compra mayorista -->
+
+<div class="mo-bg" id="moMayorista"><div class="mo"><div class="mo-bar"></div>
+<div class="mo-hd"><span class="mo-t" id="moMayoristaTitle">Compra mayorista</span><button class="mo-x" onclick="closeMo('moMayorista')">✕</button></div>
+<div class="mo-bd">
+  <input type="hidden" id="mayModulo" value="iphone"/>
+  <div style="font-size:.6rem;color:#8E8E93;margin-bottom:.4rem">Agregá cada línea de tu lote. Podés mezclar modelos.</div>
+
+  <!-- Líneas del lote -->
+
+  <div id="mayLineas"></div>
+  <button class="btn bgh" style="width:100%;font-size:.62rem;margin-bottom:.45rem" onclick="mayAddLinea()">＋ Agregar modelo</button>
+
+  <!-- Condiciones generales -->
+
+  <div style="border-top:1px solid rgba(84,84,88,.35);margin:.15rem 0 .35rem"></div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:.44rem;color:#636366;letter-spacing:.08em;margin-bottom:.28rem">⚙️ CONDICIONES GENERALES</div>
+  <div class="fr3">
+    <div class="f"><label>Moneda</label><select id="mayMoneda" onchange="mayPreview()"><option>USD</option><option>ARS</option><option>USDT</option></select></div>
+    <div class="f"><label>TC (si ARS)</label><input id="mayTc" type="number" inputmode="decimal" placeholder="0" oninput="mayPreview()"/></div>
+    <div class="f"><label>Proveedor</label><input id="mayProv" placeholder="Mayorista"/></div>
+  </div>
+
+  <!-- Preview total -->
+
+  <div id="mayPrev" style="display:none;padding:.4rem .55rem;background:#2C2C2E;border:1px solid rgba(84,84,88,.35);border-radius:11px;font-size:.65rem;color:#8E8E93"></div>
+</div>
+<div class="mo-ft">
+  <button class="btn bgh" onclick="closeMo('moMayorista')">Cancelar</button>
+  <button class="btn bpu" onclick="saveMayorista()">📦 Ingresar lote</button>
+</div>
+</div></div>
